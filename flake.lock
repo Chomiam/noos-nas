@@ -48,11 +48,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1790699021,
-        "narHash": "sha256-0OxAoyaO4Ule0abMFVbLlLTKfqGoKoQ1rSxoHuBghHQ=",
+        "lastModified": 1790699793,
+        "narHash": "sha256-wEmRj7ohzlrnYobpfbR5XWjqpF+KtO4JMda59aaH0DI=",
         "owner": "Chomiam",
         "repo": "steveos-nas-dashboard",
-        "rev": "2f64d534b5ad28a279c58233bd55137c67409253",
+        "rev": "cd3da6c53c5e2dc4ba335ed39bd35bfacdd93977",
         "type": "github"
       },
       "original": {
