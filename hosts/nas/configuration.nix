@@ -110,6 +110,12 @@
       wireguard = {
         enable = vars.services.wireguard.enable or true;
       };
+      virtualisation = {
+        enable = vars.services.virtualisation.enable or true;
+        storagePool = vars.services.virtualisation.storagePool or "/mnt/storage/vms";
+        isoPool = vars.services.virtualisation.isoPool or "/mnt/storage/isos";
+        enableIommu = vars.services.virtualisation.enableIommu or true;
+      };
       netdata = {
         enable = vars.services.netdata.enable or false;
         port = vars.services.netdata.port or 19999;
@@ -156,7 +162,7 @@
       get_lan_ip() {
         # 1. IP depuis la route vers la passerelle / Internet
         local ip=$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i=="src") print $(i+1)}')
-        if [ -n "$ip" ] && [[ "$ip" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]] && [[ "$ip" != 127.* ]] && [[ "$ip" != 172.17.* ]] && [[ "$ip" != 169.254.* ]]; then
+        if [ -n "$ip" ] && [[ "$ip" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]] && [[ "$ip" != 127.* ]] && [[ "$ip" != 172.17.* ]] && [[ "$ip" != 169.254.* ]] && [[ "$ip" != 192.168.122.* ]] && [[ "$ip" != 10.100.0.* ]]; then
           echo "$ip"
           return
         fi
@@ -164,7 +170,7 @@
         # 2. Chercher sur les interfaces physiques uniquement (eth*, en*, wl*)
         for iface in $(ip -o link show up 2>/dev/null | awk -F': ' '{print $2}' | grep -E '^(en|eth|wl)'); do
           local ip=$(ip -4 -o addr show dev "$iface" scope global 2>/dev/null | awk '{split($4, a, "/"); print a[1]}' | head -n1)
-          if [ -n "$ip" ] && [[ "$ip" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]] && [[ "$ip" != 127.* ]] && [[ "$ip" != 172.17.* ]] && [[ "$ip" != 169.254.* ]]; then
+          if [ -n "$ip" ] && [[ "$ip" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]] && [[ "$ip" != 127.* ]] && [[ "$ip" != 172.17.* ]] && [[ "$ip" != 169.254.* ]] && [[ "$ip" != 192.168.122.* ]] && [[ "$ip" != 10.100.0.* ]]; then
             echo "$ip"
             return
           fi

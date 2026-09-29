@@ -8,6 +8,7 @@
     ./jellyfin.nix
     ./containers.nix
     ./vpn.nix
+    ./virtualisation.nix
   ];
 }
 

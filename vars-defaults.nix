@@ -145,6 +145,13 @@
       port = 51820;
     };
 
+    # Hyperviseur de machines virtuelles KVM / libvirt
+    virtualisation = {
+      enable = true;
+      storagePool = "/mnt/storage/vms";
+      isoPool = "/mnt/storage/isos";
+    };
+
     # Supervision & Monitoring
     netdata = {
       enable = false;

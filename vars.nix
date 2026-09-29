@@ -61,5 +61,10 @@
       enable = true;
       port = 51820;
     };
+    virtualisation = {
+      enable = true;
+      storagePool = "/mnt/storage/vms";
+      isoPool = "/mnt/storage/isos";
+    };
   };
 }
