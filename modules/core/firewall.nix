@@ -1,7 +1,7 @@
 { config, pkgs, lib, ... }:
 
 let
-  userFirewallPath = ../../../firewall-user.nix;
+  userFirewallPath = ../../firewall-user.nix;
 in
 {
   # Importe les surcharges utilisateur si présentes
