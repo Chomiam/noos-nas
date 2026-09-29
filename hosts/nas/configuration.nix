@@ -39,6 +39,7 @@
 
     hardware = {
       gpu = vars.gpuDriver or "intel";
+      nvidiaLegacyBranch = vars.nvidiaLegacyBranch or "470";
       enableCodecs = vars.enableHardwareCodecs or true;
       cpuGovernor = vars.cpuGovernor or "powersave";
     };

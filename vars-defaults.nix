@@ -41,8 +41,14 @@
   };
 
   # 🎮 Matériel & Transcodage GPU
-  # Valeurs possibles : "intel" (QuickSync), "amd" (VA-API), "nvidia" (NVENC), "headless" (aucun GPU / software)
+  # Valeurs possibles :
+  # - "intel"          : Intel QuickSync (iGPU UHD/Iris Xe, Core Ultra, N100, Arc A380/A770)
+  # - "amd"            : AMD Radeon / APU (VA-API radeonsi, ROCm OpenCL)
+  # - "nvidia"         : Nvidia Moderne (Turing GTX 1650 et supérieur, RTX 20/30/40/50, NVENC/NVDEC)
+  # - "nvidia-legacy"  : Nvidia Legacy (pre-Turing / inférieur à GTX 1650 : Kepler, Maxwell, Pascal, Fermi)
+  # - "headless"       : Aucun GPU / software
   gpuDriver = "intel";
+  nvidiaLegacyBranch = "470";
   enableHardwareCodecs = true;
 
   # Profil énergétique processeur serveur ("powersave", "schedutil", "performance")

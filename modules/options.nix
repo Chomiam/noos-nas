@@ -46,14 +46,19 @@ with lib;
 
     hardware = {
       gpu = mkOption {
-        type = types.enum [ "intel" "amd" "nvidia" "headless" ];
+        type = types.enum [ "intel" "amd" "nvidia" "nvidia-legacy" "headless" ];
         default = "intel";
-        description = "Type de GPU pour le transcodage matériel sur le NAS";
+        description = "Type de GPU pour le transcodage matériel sur le NAS (intel, amd, nvidia moderne [Turing/GTX 1650+], nvidia-legacy [Kepler/Maxwell/Pascal/pre-Turing], headless)";
+      };
+      nvidiaLegacyBranch = mkOption {
+        type = types.enum [ "470" "390" ];
+        default = "470";
+        description = "Version de la branche Nvidia Legacy (470 pour Kepler/Maxwell/GTX 600-700-800, 390 pour très anciens GPU Fermi)";
       };
       enableCodecs = mkOption {
         type = types.bool;
         default = true;
-        description = "Activer les codecs matériels VA-API / QuickSync / Compute";
+        description = "Activer l'ensemble des codecs matériels VA-API / QuickSync / VDPAU / Compute OpenCL";
       };
       cpuGovernor = mkOption {
         type = types.enum [ "powersave" "schedutil" "performance" "ondemand" ];

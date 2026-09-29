@@ -7,8 +7,14 @@
 
   hostName = "steveos-nas";
 
-  # Choix du GPU pour le transcodage matériel ("intel", "amd", "nvidia", "headless")
+  # Choix du GPU pour le transcodage matériel :
+  # - "intel"          : Intel QuickSync (iGPU UHD/Iris Xe, Core Ultra, N100, Arc A380/A770)
+  # - "amd"            : AMD Radeon / APU (VA-API radeonsi, ROCm OpenCL)
+  # - "nvidia"         : Nvidia Moderne (Turing GTX 1650 et supérieur, RTX 20/30/40/50, NVENC/NVDEC)
+  # - "nvidia-legacy"  : Nvidia Legacy (pre-Turing / inférieur à GTX 1650 : Kepler, Maxwell, Pascal, Fermi)
+  # - "headless"       : Aucun GPU / transcodage software CPU
   gpuDriver = "intel";
+  nvidiaLegacyBranch = "470"; # "470" (recommandé Kepler/GTX 600-700-800) ou "390"
   enableHardwareCodecs = true;
 
   # Sécurité et pare-feu
