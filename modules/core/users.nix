@@ -61,22 +61,31 @@ in
   };
 
 
-  # 🔑 Droits d'accès et modification pour l'utilisateur sur /etc/nixos et son répertoire personnel
+  # 🔑 Droits d'accès et création déclarative de l'arborescence personnelle de l'utilisateur
   system.activationScripts.etcNixosPermissions = lib.stringAfter [ "users" "groups" ] ''
     if [ -d /etc/nixos ]; then
       chown -R ${u.username}:users /etc/nixos
       chmod -R u+rwX,g+rwX /etc/nixos
     fi
-    if [ -d "/home/${u.username}" ]; then
-      chown ${u.username}:users "/home/${u.username}"
-      chmod u+rwx "/home/${u.username}"
-    fi
+    mkdir -p "${u.homeDirectory}/Documents"              "${u.homeDirectory}/Images"              "${u.homeDirectory}/Vidéos"              "${u.homeDirectory}/Musique"              "${u.homeDirectory}/Téléchargements"
+    chown -R ${u.username}:users "${u.homeDirectory}"
+    chmod 0755 "${u.homeDirectory}"                "${u.homeDirectory}/Documents"                "${u.homeDirectory}/Images"                "${u.homeDirectory}/Vidéos"                "${u.homeDirectory}/Musique"                "${u.homeDirectory}/Téléchargements"
   '';
 
-  # 📁 Règles systemd-tmpfiles pour persister les permissions utilisateur sur /etc/nixos
+  # 📁 Règles systemd-tmpfiles déclaratives pour les dossiers personnels et raccourcis XDG
   systemd.tmpfiles.rules = [
     "d /etc/nixos 0775 ${u.username} users - -"
     "Z /etc/nixos 0775 ${u.username} users - -"
+    "d ${u.homeDirectory} 0755 ${u.username} users - -"
+    "d ${u.homeDirectory}/Documents 0755 ${u.username} users - -"
+    "d ${u.homeDirectory}/Images 0755 ${u.username} users - -"
+    "d ${u.homeDirectory}/Vidéos 0755 ${u.username} users - -"
+    "d ${u.homeDirectory}/Musique 0755 ${u.username} users - -"
+    "d ${u.homeDirectory}/Téléchargements 0755 ${u.username} users - -"
+    "L+ ${u.homeDirectory}/Pictures - - - - Images"
+    "L+ ${u.homeDirectory}/Videos - - - - Vidéos"
+    "L+ ${u.homeDirectory}/Music - - - - Musique"
+    "L+ ${u.homeDirectory}/Downloads - - - - Téléchargements"
   ];
 
   # Paquets de base pour l'administration en ligne de commande & autocomplétion
