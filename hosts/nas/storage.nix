@@ -14,6 +14,10 @@
     "d /mnt/storage/sftp 0775 root storage -"
   ];
 
+  # Activation automatique du RAID logiciel (mdadm) et de la détection LVM2
+  boot.swraid.enable = lib.mkDefault true;
+  environment.etc."mdadm.conf".text = "MAILADDR root";
+
   # fileSystems."/mnt/storage" = {
   #   device = "/dev/disk/by-label/STORAGE";
   #   fsType = "btrfs";

@@ -130,5 +130,13 @@ in
     ncdu
     tree
     nh
+
+    # Outils Stockage, RAID & Systèmes de fichiers
+    mdadm
+    lvm2
+    btrfs-progs
+    xfsprogs
+    e2fsprogs
+    parted
   ];
 }
