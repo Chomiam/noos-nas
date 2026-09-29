@@ -1,0 +1,7 @@
+[package]
+name = "steveos-cli"
+version = "0.1.0"
+edition = "2021"
+description = "Outil CLI en Rust pour l'administration et le déploiement de STEvE_OS NAS Edition"
+
+[dependencies]
