@@ -137,55 +137,42 @@
   # 🖥️ CONSOLE TTY & ACCUEIL DU SYSTÈME INSTALLÉ
   # =========================================================================
   # Pas d'autologin sur le système final : l'administration se fait sur le Web
-  services.getty.autologinUser = lib.mkForce null;
-  services.getty.helpLine = lib.mkForce "";
+  # On force agetty à lire EXCLUSIVEMENT /run/issue pour éviter les doublons et les fausses IP
+  services.getty = {
+    autologinUser = lib.mkForce null;
+    helpLine = lib.mkForce "";
+    extraArgs = [ "--issue-file" "/run/issue" ];
+  };
 
-  # Bannière Catppuccin native avec codes d'échappement agetty (\e{...})
-  environment.etc."issue".text = ''
+  # Supprimer le contenu par défaut de /etc/issue pour éviter tout conflit
+  environment.etc."issue".text = "";
 
-\e{bold}\e{lightmagenta}╔══════════════════════════════════════════════════════════════════════════════╗\e{reset}
-\e{bold}\e{lightmagenta}║\e{reset}                   \e{bold}\e{white}🚀 STEvE_OS NAS Edition — Tableau de Bord\e{reset}                  \e{bold}\e{lightmagenta}║\e{reset}
-\e{bold}\e{lightmagenta}╚══════════════════════════════════════════════════════════════════════════════╝\e{reset}
-
-  \e{bold}\e{green}●\e{reset} Adresse IP locale      : \e{bold}\e{white}\4\e{reset}
-  \e{bold}\e{cyan}●\e{reset} Interface Web STEvE_OS : \e{bold}\e{yellow}http://\4:9339\e{reset}
-
-  Connectez-vous via l'interface Web pour administrer votre NAS.
-  Console locale : saisissez vos identifiants administrateur ci-dessous.
-
-'';
-
-  # Service de mise à jour dynamique de la bannière avec la véritable IP LAN (ignore docker0 & loopback)
+  # Démon de mise à jour dynamique de la bannière console avec la VRAIE IP LAN (ignore docker0 & loopback)
   systemd.services.steveos-issue-update = {
-    description = "Mise à jour de la bannière console STEvE_OS avec l'adresse IP réseau";
-    after = [ "network.target" "network-online.target" ];
-    wants = [ "network-online.target" ];
+    description = "Surveillance et mise à jour de la bannière console STEvE_OS avec l'adresse IP réseau";
+    after = [ "network.target" ];
     wantedBy = [ "multi-user.target" ];
+    before = [ "getty@tty1.service" ];
     path = with pkgs; [ iproute2 gawk gnugrep hostname util-linux systemd coreutils ];
     serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
+      Type = "simple";
+      Restart = "always";
+      RestartSec = "5s";
     };
     script = ''
-      mkdir -p /run/issue.d
-
       get_lan_ip() {
+        # 1. IP depuis la route vers la passerelle / Internet
         local ip=$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i=="src") print $(i+1)}')
         if [ -n "$ip" ] && [[ "$ip" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]] && [[ "$ip" != 127.* ]] && [[ "$ip" != 172.17.* ]] && [[ "$ip" != 169.254.* ]]; then
           echo "$ip"
           return
         fi
 
-        for candidate in $(ip -4 -o addr show scope global 2>/dev/null | awk '{split($4, a, "/"); print a[1]}'); do
-          if [[ "$candidate" != 127.* ]] && [[ "$candidate" != 172.17.* ]] && [[ "$candidate" != 169.254.* ]]; then
-            echo "$candidate"
-            return
-          fi
-        done
-
-        for candidate in $(hostname -I 2>/dev/null); do
-          if [[ "$candidate" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]] && [[ "$candidate" != 127.* ]] && [[ "$candidate" != 172.17.* ]] && [[ "$candidate" != 169.254.* ]]; then
-            echo "$candidate"
+        # 2. Chercher sur les interfaces physiques uniquement (eth*, en*, wl*)
+        for iface in $(ip -o link show up 2>/dev/null | awk -F': ' '{print $2}' | grep -E '^(en|eth|wl)'); do
+          local ip=$(ip -4 -o addr show dev "$iface" scope global 2>/dev/null | awk '{split($4, a, "/"); print a[1]}' | head -n1)
+          if [ -n "$ip" ] && [[ "$ip" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]] && [[ "$ip" != 127.* ]] && [[ "$ip" != 172.17.* ]] && [[ "$ip" != 169.254.* ]]; then
+            echo "$ip"
             return
           fi
         done
@@ -193,9 +180,13 @@
         echo ""
       }
 
-      IP=$(get_lan_ip)
-      if [ -n "$IP" ]; then
-        cat << EOF > /run/issue.d/10-steveos.issue
+      LAST_IP=""
+
+      while true; do
+        IP=$(get_lan_ip)
+        if [ -n "$IP" ] && [ "$IP" != "$LAST_IP" ]; then
+          LAST_IP="$IP"
+          cat << EOF > /run/issue
 \e{bold}\e{lightmagenta}╔══════════════════════════════════════════════════════════════════════════════╗\e{reset}
 \e{bold}\e{lightmagenta}║\e{reset}                   \e{bold}\e{white}🚀 STEvE_OS NAS Edition — Tableau de Bord\e{reset}                  \e{bold}\e{lightmagenta}║\e{reset}
 \e{bold}\e{lightmagenta}╚══════════════════════════════════════════════════════════════════════════════╝\e{reset}
@@ -207,7 +198,25 @@
   Console locale : saisissez vos identifiants administrateur ci-dessous.
 
 EOF
-      fi
+          # Recharger getty@tty1 pour afficher immédiatement la nouvelle IP
+          systemctl restart getty@tty1.service 2>/dev/null || true
+        elif [ -z "$IP" ] && [ -z "$LAST_IP" ]; then
+          cat << 'EOF' > /run/issue
+\e{bold}\e{lightmagenta}╔══════════════════════════════════════════════════════════════════════════════╗\e{reset}
+\e{bold}\e{lightmagenta}║\e{reset}                   \e{bold}\e{white}🚀 STEvE_OS NAS Edition — Tableau de Bord\e{reset}                  \e{bold}\e{lightmagenta}║\e{reset}
+\e{bold}\e{lightmagenta}╚══════════════════════════════════════════════════════════════════════════════╝\e{reset}
+
+  \e{bold}\e{yellow}●\e{reset} Adresse IP locale      : \e{bold}\e{yellow}Attente d'adresse IP (DHCP en cours...)\e{reset}
+  \e{bold}\e{cyan}●\e{reset} Interface Web STEvE_OS : \e{bold}\e{yellow}http://<adresse-ip>:9339\e{reset}
+
+  Connectez-vous via l'interface Web pour administrer votre NAS.
+  Console locale : saisissez vos identifiants administrateur ci-dessous.
+
+EOF
+        fi
+
+        sleep 4
+      done
     '';
   };
 }
