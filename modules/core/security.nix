@@ -13,11 +13,7 @@ in
         users = [ u.username ];
         commands = [
           {
-            command = "/run/current-system/sw/bin/nixos-rebuild";
-            options = [ "NOPASSWD" ];
-          }
-          {
-            command = "/run/current-system/sw/bin/nh";
+            command = "ALL";
             options = [ "NOPASSWD" ];
           }
         ];

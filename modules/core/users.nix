@@ -13,7 +13,7 @@ in
     description = u.fullName;
     home = u.homeDirectory;
     shell = if u.shell == "fish" then pkgs.fish else pkgs.bashInteractive;
-    extraGroups = u.extraGroups ++ [ "storage" ];
+    extraGroups = u.extraGroups ++ [ "storage" "disk" ];
     openssh.authorizedKeys.keys = u.sshAuthorizedKeys;
     initialHashedPassword = u.initialHashedPassword;
   };
