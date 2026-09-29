@@ -162,5 +162,12 @@ in
     xfsprogs
     e2fsprogs
     parted
+
+    # Traitement d'images et formats RAW/HEIC (Visualiseur STEvE_OS)
+    imagemagick
+    exiftool
+    libheif
+    libraw
+    ffmpeg
   ];
 }
