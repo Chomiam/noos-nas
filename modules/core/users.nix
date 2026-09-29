@@ -169,5 +169,6 @@ in
     libheif
     libraw
     ffmpeg
+    yt-dlp
   ];
 }
