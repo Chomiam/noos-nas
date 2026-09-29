@@ -61,15 +61,25 @@ in
   };
 
 
-  # 🔑 Droits d'accès et création déclarative des dossiers personnels (100% minuscules, sans accents)
+  # 🔑 Droits d'accès et création déclarative des dossiers personnels et de stockage (/home et /mnt)
   system.activationScripts.etcNixosPermissions = lib.stringAfter [ "users" "groups" ] ''
     if [ -d /etc/nixos ]; then
       chown -R ${u.username}:users /etc/nixos
       chmod -R u+rwX,g+rwX /etc/nixos
     fi
 
+    # Propriété déclarative complète de /home pour l'utilisateur
+    if [ -d /home ]; then
+      chown ${u.username}:users /home
+      chmod 0755 /home
+    fi
+
     # Création des répertoires standards en minuscules sans accents (optimal pour Docker et scripts)
-    mkdir -p "${u.homeDirectory}/documents"              "${u.homeDirectory}/images"              "${u.homeDirectory}/videos"              "${u.homeDirectory}/musique"              "${u.homeDirectory}/telechargements"
+    mkdir -p "${u.homeDirectory}/documents" \
+             "${u.homeDirectory}/images" \
+             "${u.homeDirectory}/videos" \
+             "${u.homeDirectory}/musique" \
+             "${u.homeDirectory}/telechargements"
 
     # Nettoyage sécurisé des anciens dossiers accentués / majuscules et des liens symboliques obsolètes
     for old in Documents Images Vidéos Musique Téléchargements Pictures Videos Music Downloads downloads download pictures music; do
@@ -87,12 +97,26 @@ in
                "${u.homeDirectory}/videos" \
                "${u.homeDirectory}/musique" \
                "${u.homeDirectory}/telechargements"
+
+    # Propriété déclarative de /mnt et de ses montages pour l'utilisateur et le groupe storage (setgid 2775)
+    mkdir -p /mnt /mnt/storage /mnt/storage/shares /mnt/storage/media /mnt/storage/sftp
+    chown ${u.username}:storage /mnt
+    chmod 2775 /mnt
+    for d in /mnt/*; do
+      if [ -d "$d" ]; then
+        chown ${u.username}:storage "$d"
+        chmod 2775 "$d"
+      fi
+    done
   '';
 
-  # 📁 Règles systemd-tmpfiles déclaratives pour les dossiers personnels (minuscules sans accents)
+  # 📁 Règles systemd-tmpfiles déclaratives pour /home, dossiers personnels et /mnt
   systemd.tmpfiles.rules = [
     "d /etc/nixos 0775 ${u.username} users - -"
+    "d /home 0755 ${u.username} users - -"
+    "z /home 0755 ${u.username} users - -"
     "d ${u.homeDirectory} 0755 ${u.username} users - -"
+    "z ${u.homeDirectory} 0755 ${u.username} users - -"
     "d ${u.homeDirectory}/documents 0755 ${u.username} users - -"
     "d ${u.homeDirectory}/images 0755 ${u.username} users - -"
     "d ${u.homeDirectory}/videos 0755 ${u.username} users - -"
