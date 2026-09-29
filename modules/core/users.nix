@@ -93,6 +93,7 @@ in
     git
     gh
     nvd
+    cfspeedtest
     curl
     wget
     htop
