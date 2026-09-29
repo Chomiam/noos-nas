@@ -61,31 +61,47 @@ in
   };
 
 
-  # 🔑 Droits d'accès et création déclarative de l'arborescence personnelle de l'utilisateur
+  # 🔑 Droits d'accès et création déclarative des dossiers personnels (100% minuscules, sans accents)
   system.activationScripts.etcNixosPermissions = lib.stringAfter [ "users" "groups" ] ''
     if [ -d /etc/nixos ]; then
       chown -R ${u.username}:users /etc/nixos
       chmod -R u+rwX,g+rwX /etc/nixos
     fi
-    mkdir -p "${u.homeDirectory}/Documents"              "${u.homeDirectory}/Images"              "${u.homeDirectory}/Vidéos"              "${u.homeDirectory}/Musique"              "${u.homeDirectory}/Téléchargements"
+
+    # Création des répertoires standards en minuscules sans accents (optimal pour Docker et scripts)
+    mkdir -p "${u.homeDirectory}/documents"              "${u.homeDirectory}/images"              "${u.homeDirectory}/videos"              "${u.homeDirectory}/musique"              "${u.homeDirectory}/telechargements"
+
+    # Nettoyage sécurisé des anciens dossiers accentués / majuscules s'ils sont vides
+    for old in Documents Images Vidéos Musique Téléchargements Pictures Videos Music Downloads; do
+      if [ -d "${u.homeDirectory}/$old" ] && [ ! -L "${u.homeDirectory}/$old" ]; then
+        rmdir "${u.homeDirectory}/$old" 2>/dev/null || true
+      fi
+      if [ -L "${u.homeDirectory}/$old" ]; then
+        rm -f "${u.homeDirectory}/$old" 2>/dev/null || true
+      fi
+    done
+
+    # Liens symboliques minuscules de compatibilité universelle
+    ln -sfn "telechargements" "${u.homeDirectory}/downloads"
+    ln -sfn "images" "${u.homeDirectory}/pictures"
+    ln -sfn "musique" "${u.homeDirectory}/music"
+
     chown -R ${u.username}:users "${u.homeDirectory}"
-    chmod 0755 "${u.homeDirectory}"                "${u.homeDirectory}/Documents"                "${u.homeDirectory}/Images"                "${u.homeDirectory}/Vidéos"                "${u.homeDirectory}/Musique"                "${u.homeDirectory}/Téléchargements"
+    chmod 0755 "${u.homeDirectory}"                "${u.homeDirectory}/documents"                "${u.homeDirectory}/images"                "${u.homeDirectory}/videos"                "${u.homeDirectory}/musique"                "${u.homeDirectory}/telechargements"
   '';
 
-  # 📁 Règles systemd-tmpfiles déclaratives pour les dossiers personnels et raccourcis XDG
+  # 📁 Règles systemd-tmpfiles déclaratives pour les dossiers personnels (minuscules sans accents)
   systemd.tmpfiles.rules = [
     "d /etc/nixos 0775 ${u.username} users - -"
-    "Z /etc/nixos 0775 ${u.username} users - -"
     "d ${u.homeDirectory} 0755 ${u.username} users - -"
-    "d ${u.homeDirectory}/Documents 0755 ${u.username} users - -"
-    "d ${u.homeDirectory}/Images 0755 ${u.username} users - -"
-    "d ${u.homeDirectory}/Vidéos 0755 ${u.username} users - -"
-    "d ${u.homeDirectory}/Musique 0755 ${u.username} users - -"
-    "d ${u.homeDirectory}/Téléchargements 0755 ${u.username} users - -"
-    "L+ ${u.homeDirectory}/Pictures - - - - Images"
-    "L+ ${u.homeDirectory}/Videos - - - - Vidéos"
-    "L+ ${u.homeDirectory}/Music - - - - Musique"
-    "L+ ${u.homeDirectory}/Downloads - - - - Téléchargements"
+    "d ${u.homeDirectory}/documents 0755 ${u.username} users - -"
+    "d ${u.homeDirectory}/images 0755 ${u.username} users - -"
+    "d ${u.homeDirectory}/videos 0755 ${u.username} users - -"
+    "d ${u.homeDirectory}/musique 0755 ${u.username} users - -"
+    "d ${u.homeDirectory}/telechargements 0755 ${u.username} users - -"
+    "L+ ${u.homeDirectory}/downloads - - - - telechargements"
+    "L+ ${u.homeDirectory}/pictures - - - - images"
+    "L+ ${u.homeDirectory}/music - - - - musique"
   ];
 
   # Paquets de base pour l'administration en ligne de commande & autocomplétion
