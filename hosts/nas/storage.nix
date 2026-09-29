@@ -18,9 +18,10 @@
   boot.swraid.enable = lib.mkDefault true;
   environment.etc."mdadm.conf".text = "MAILADDR root";
 
-  # fileSystems."/mnt/storage" = {
-  #   device = "/dev/disk/by-label/STORAGE";
-  #   fsType = "btrfs";
-  #   options = [ "defaults" "compress=zstd" "noatime" ];
-  # };
+  # Montage persistant automatique de la grappe de stockage
+  fileSystems."/mnt/storage" = {
+    device = "/dev/disk/by-label/STORAGE";
+    fsType = "btrfs";
+    options = [ "defaults" "compress=zstd" "noatime" "nofail" ];
+  };
 }
