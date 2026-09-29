@@ -18,6 +18,30 @@ in
     initialHashedPassword = u.initialHashedPassword;
   };
 
+  # 🐚 Configuration avancée de Bash avec autocomplétion intelligente
+  programs.bash = {
+    completion.enable = true;
+    enable = true;
+    shellInit = ''
+      # Options avancées d'historique et autocomplétion
+      shopt -s histappend
+      shopt -s checkwinsize
+      shopt -s globstar 2>/dev/null || true
+      shopt -s nocaseglob 2>/dev/null || true
+
+      # Chargement de zoxide (navigation rapide avec autocomplétion)
+      if command -v zoxide >/dev/null 2>&1; then
+        eval "$(zoxide init bash)"
+      fi
+    '';
+  };
+
+  # 🔍 Recherche floue et autocomplétion interactive fzf (Ctrl-R, Alt-C)
+  programs.fzf = {
+    keybindings = true;
+    fuzzyCompletion = true;
+  };
+
   # 🛠️ Outil CLI 'nh' (Nix Helper) avec chemin flake par défaut vers /etc/nixos
   programs.nh = {
     enable = true;
@@ -54,8 +78,17 @@ in
     "Z /etc/nixos 0775 ${u.username} users - -"
   ];
 
-  # Paquets de base pour l'administration en ligne de commande
+  # Paquets de base pour l'administration en ligne de commande & autocomplétion
   environment.systemPackages = with pkgs; [
+    # Complétion & Productivité Bash
+    bash-completion
+    nix-bash-completions
+    fzf
+    zoxide
+    blesh
+    starship
+
+    # Outils CLI d'administration
     git
     curl
     wget
