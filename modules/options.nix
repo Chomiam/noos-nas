@@ -151,7 +151,7 @@ with lib;
         enable = mkOption { type = types.bool; default = false; };
       };
       cockpit = {
-        enable = mkOption { type = types.bool; default = true; };
+        enable = mkOption { type = types.bool; default = false; };
         port = mkOption { type = types.int; default = 9090; };
       };
       tailscale = {

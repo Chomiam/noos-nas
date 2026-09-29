@@ -141,7 +141,7 @@
 
     # Interfaces Web d'administration
     cockpit = {
-      enable = true;
+      enable = false; # Désactivé au profit du Dashboard STEvE_OS (port 9339)
       port = 9090;
     };
 

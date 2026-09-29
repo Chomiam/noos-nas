@@ -58,7 +58,7 @@
       enable = true;
     };
     cockpit = {
-      enable = true;
+      enable = false;
     };
   };
 }

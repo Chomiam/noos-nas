@@ -108,7 +108,7 @@
         enable = vars.services.podman.enable or false;
       };
       cockpit = {
-        enable = vars.services.cockpit.enable or true;
+        enable = vars.services.cockpit.enable or false;
         port = vars.services.cockpit.port or 9090;
       };
       tailscale = {
@@ -132,4 +132,30 @@
     port = vars.services.dashboard.port or 9339;
     openFirewall = true;
   };
+
+  # =========================================================================
+  # 🖥️ CONSOLE TTY & ACCUEIL DU SYSTÈME INSTALLÉ
+  # =========================================================================
+  # Pas d'autologin sur le système final : l'administration se fait sur le Web
+  services.getty.autologinUser = lib.mkForce null;
+  services.getty.helpLine = lib.mkForce "";
+
+  # Bannière Catppuccin affichant l'adresse IP et l'accès au Dashboard (:9339)
+  # Bannière Catppuccin affichant l'adresse IP et l'accès au Dashboard (:9339)
+  environment.etc."issue".text =
+    let
+      esc = "\x1b";
+    in ''
+
+  ${esc}[1;35m╔══════════════════════════════════════════════════════════════════════════════╗${esc}[0m
+  ${esc}[1;35m║${esc}[0m                   ${esc}[1;37m🚀 STEvE_OS NAS Edition — Tableau de Bord${esc}[0m                  ${esc}[1;35m║${esc}[0m
+  ${esc}[1;35m╚══════════════════════════════════════════════════════════════════════════════╝${esc}[0m
+
+    ${esc}[1;32m●${esc}[0m Adresse IP locale      : ${esc}[1;37m\4${esc}[0m
+    ${esc}[1;36m●${esc}[0m Interface Web STEvE_OS : ${esc}[1;33mhttp://\4:9339${esc}[0m
+
+  Ouvrez ce lien dans un navigateur pour vous connecter et administrer votre NAS.
+  Console locale : saisissez vos identifiants administrateur ci-dessous.
+
+'';
 }
