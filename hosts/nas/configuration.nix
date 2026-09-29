@@ -13,6 +13,12 @@
   ];
 
   # =========================================================================
+  # 🚀 CHARGEUR DE DÉMARRAGE UEFI (SYSTEMD-BOOT)
+  # =========================================================================
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = true;
+
+  # =========================================================================
   # ⚙️ MAPPING DES VARIABLES VARS.NIX VERS LES OPTIONS STEvEOS.*
   # =========================================================================
   steveos = {
