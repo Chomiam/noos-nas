@@ -9,6 +9,7 @@
     ./hardware-configuration.nix
     ./storage.nix
     ../../modules
+    ../../docker
   ];
 
   # =========================================================================

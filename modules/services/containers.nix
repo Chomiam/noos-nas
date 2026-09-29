@@ -17,6 +17,9 @@ in
       enableNvidia = dockerCfg.enableNvidia;
     };
 
+    # Backend OCI pour conteneurs déclaratifs
+    virtualisation.oci-containers.backend = lib.mkIf dockerCfg.enable "docker";
+
     # Moteur Podman
     virtualisation.podman = lib.mkIf podmanCfg.enable {
       enable = true;
