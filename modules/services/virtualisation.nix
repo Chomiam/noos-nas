@@ -76,6 +76,40 @@ in
     systemd.sockets.libvirtd-ro.wantedBy = [ "sockets.target" "multi-user.target" ];
     systemd.sockets.libvirtd-admin.wantedBy = [ "sockets.target" "multi-user.target" ];
 
+    # Initialisation déclarative du réseau NAT virtuel par défaut (virbr0)
+    systemd.services.libvirt-default-network = {
+      description = "Initialisation du réseau NAT par défaut de libvirt (virbr0)";
+      after = [ "libvirtd.service" ];
+      wants = [ "libvirtd.service" ];
+      wantedBy = [ "multi-user.target" ];
+      serviceConfig = {
+        Type = "oneshot";
+        RemainAfterExit = true;
+        ExecStart = pkgs.writeShellScript "libvirt-init-default-net" ''
+          if ! ${pkgs.libvirt}/bin/virsh -c qemu:///system net-info default >/dev/null 2>&1; then
+            cat << 'EOF' > /run/libvirt/default-net.xml
+<network>
+  <name>default</name>
+  <forward mode='nat'/>
+  <bridge name='virbr0' stp='on' delay='0'/>
+  <ip address='192.168.122.1' netmask='255.255.255.0'>
+    <dhcp>
+      <range start='192.168.122.2' end='192.168.122.254'/>
+    </dhcp>
+  </ip>
+</network>
+EOF
+            ${pkgs.libvirt}/bin/virsh -c qemu:///system net-define /run/libvirt/default-net.xml || true
+            rm -f /run/libvirt/default-net.xml
+          fi
+          ${pkgs.libvirt}/bin/virsh -c qemu:///system net-autostart default || true
+          if ! LC_ALL=C ${pkgs.libvirt}/bin/virsh -c qemu:///system net-info default 2>&1 | grep -q "Active:.*yes"; then
+            ${pkgs.libvirt}/bin/virsh -c qemu:///system net-start default || true
+          fi
+        '';
+      };
+    };
+
     # 5. Paquets système requis pour l'administration et la console web
     environment.systemPackages = with pkgs; [
       qemu_kvm
