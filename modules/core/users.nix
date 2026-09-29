@@ -60,8 +60,6 @@ in
     };
   };
 
-  # 🐙 GitHub CLI (gh)
-  programs.gh.enable = true;
 
   # 🔑 Droits d'accès et modification pour l'utilisateur sur /etc/nixos et son répertoire personnel
   system.activationScripts.etcNixosPermissions = lib.stringAfter [ "users" "groups" ] ''
