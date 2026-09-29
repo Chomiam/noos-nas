@@ -29,12 +29,13 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    # 1. Paramètres noyau pour AMD-V (svm) et Intel VT-x (vmx) + IOMMU pour le Passthrough
+    # 1. Paramètres noyau pour AMD-V (svm) et Intel VT-x (vmx) + IOMMU pour le Passthrough (AMD / Intel / Nvidia)
     boot.kernelParams = lib.optionals cfg.enableIommu [
       "amd_iommu=on"
       "intel_iommu=on"
-      "iommu=pt"            # Mode passthrough matériel direct
-      "kvm.ignore_msrs=1"   # Stabilité pour Windows 11 et hyperviseurs imbriqués
+      "iommu=pt"                     # Mode passthrough matériel direct
+      "kvm.ignore_msrs=1"            # Stabilité pour Windows 11 et pilotes graphiques
+      "kvm.report_ignored_msrs=0"    # Évite le spam dans les logs lors des sondes de pilotes Nvidia
     ];
 
     # 2. Modules noyau VFIO et filtrage pont réseau
@@ -84,11 +85,15 @@ in
     users.users.${u}.extraGroups = [ "libvirtd" "kvm" ];
 
     # 7. Création déclarative des dossiers de stockage pour VMs et ISOs
+    # + Liens symboliques de compatibilité pour les sockets client virtqemud -> libvirt-sock
     systemd.tmpfiles.rules = [
       "d ${cfg.storagePool} 2775 ${u} storage -"
       "z ${cfg.storagePool} 2775 ${u} storage -"
       "d ${cfg.isoPool} 2775 ${u} storage -"
       "z ${cfg.isoPool} 2775 ${u} storage -"
+      "L+ /run/libvirt/virtqemud-sock - - - - /run/libvirt/libvirt-sock"
+      "L+ /run/libvirt/virtqemud-sock-ro - - - - /run/libvirt/libvirt-sock-ro"
+      "L+ /run/libvirt/virtqemud-admin-sock - - - - /run/libvirt/libvirt-admin-sock"
     ];
   };
 }
