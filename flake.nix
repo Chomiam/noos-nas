@@ -3,7 +3,10 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-26.05";
-    steveos-nas-dashboard.url = "github:Chomiam/steveos-nas-dashboard";
+    steveos-nas-dashboard = {
+      url = "github:Chomiam/steveos-nas-dashboard";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = { self, nixpkgs, ... }@inputs:

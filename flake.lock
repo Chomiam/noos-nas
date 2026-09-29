@@ -34,22 +34,6 @@
         "type": "github"
       }
     },
-    "nixpkgs_2": {
-      "locked": {
-        "lastModified": 1790533781,
-        "narHash": "sha256-F+b8u43BVF5DlM0pz7JQSbtbwKy5PrHIT5zQUekXsD0=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "cf5e76507c6e23b59f7e0ffcc7baa2a39ddd8442",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "ref": "nixos-26.05",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
     "root": {
       "inputs": {
         "nixpkgs": "nixpkgs",
@@ -59,14 +43,16 @@
     "steveos-nas-dashboard": {
       "inputs": {
         "flake-utils": "flake-utils",
-        "nixpkgs": "nixpkgs_2"
+        "nixpkgs": [
+          "nixpkgs"
+        ]
       },
       "locked": {
-        "lastModified": 1790692611,
-        "narHash": "sha256-uXl+01HJfEn9oftvf1R62hGFNoXWwRXdFORuwDPMIeo=",
+        "lastModified": 1790693882,
+        "narHash": "sha256-QK+J3P6xd7/iZgrmF26yEOzO15oXmueCb3Le14WPblE=",
         "owner": "Chomiam",
         "repo": "steveos-nas-dashboard",
-        "rev": "4cbad008469400b830d8acc1cf06e04073fdf1a7",
+        "rev": "fe660bd8e178969142810b7ae2a0c7f3ef94fd45",
         "type": "github"
       },
       "original": {
