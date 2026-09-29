@@ -152,6 +152,11 @@
       isoPool = "/mnt/storage/isos";
     };
 
+    # Compatibilité universelle des binaires externes (nix-ld & AppImage)
+    nixLd = {
+      enable = true;
+    };
+
     # Supervision & Monitoring
     netdata = {
       enable = false;

@@ -47,7 +47,7 @@ steveos-nas/
 │   ├── core/                       # Nix, utilisateurs, sécurité, pare-feu modulaire
 │   ├── hardware/                   # Pilotes GPU, codecs VA-API/QSV, économie d'énergie
 │   ├── storage/                    # SMART, spindown, maintenance disques
-│   └── services/                   # Samba, NFS, sFTP, Jellyfin, Docker, VPN (WireGuard)
+│   └── services/                   # Samba, NFS, sFTP, Jellyfin, Docker, VPN (WireGuard), KVM, nix-ld
 │
 └── tools/
     └── steveos-cli/                # 🦀 Outil d'administration natif en Rust

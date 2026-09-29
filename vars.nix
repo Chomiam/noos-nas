@@ -66,5 +66,8 @@
       storagePool = "/mnt/storage/vms";
       isoPool = "/mnt/storage/isos";
     };
+    nixLd = {
+      enable = true;
+    };
   };
 }

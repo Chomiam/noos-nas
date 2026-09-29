@@ -116,6 +116,9 @@
         isoPool = vars.services.virtualisation.isoPool or "/mnt/storage/isos";
         enableIommu = vars.services.virtualisation.enableIommu or true;
       };
+      nixLd = {
+        enable = vars.services.nixLd.enable or true;
+      };
       netdata = {
         enable = vars.services.netdata.enable or false;
         port = vars.services.netdata.port or 19999;
