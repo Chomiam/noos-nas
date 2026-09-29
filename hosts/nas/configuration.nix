@@ -140,22 +140,74 @@
   services.getty.autologinUser = lib.mkForce null;
   services.getty.helpLine = lib.mkForce "";
 
-  # Bannière Catppuccin affichant l'adresse IP et l'accès au Dashboard (:9339)
-  # Bannière Catppuccin affichant l'adresse IP et l'accès au Dashboard (:9339)
-  environment.etc."issue".text =
-    let
-      esc = "\x1b";
-    in ''
+  # Bannière Catppuccin native avec codes d'échappement agetty (\e{...})
+  environment.etc."issue".text = ''
 
-  ${esc}[1;35m╔══════════════════════════════════════════════════════════════════════════════╗${esc}[0m
-  ${esc}[1;35m║${esc}[0m                   ${esc}[1;37m🚀 STEvE_OS NAS Edition — Tableau de Bord${esc}[0m                  ${esc}[1;35m║${esc}[0m
-  ${esc}[1;35m╚══════════════════════════════════════════════════════════════════════════════╝${esc}[0m
+\e{bold}\e{lightmagenta}╔══════════════════════════════════════════════════════════════════════════════╗\e{reset}
+\e{bold}\e{lightmagenta}║\e{reset}                   \e{bold}\e{white}🚀 STEvE_OS NAS Edition — Tableau de Bord\e{reset}                  \e{bold}\e{lightmagenta}║\e{reset}
+\e{bold}\e{lightmagenta}╚══════════════════════════════════════════════════════════════════════════════╝\e{reset}
 
-    ${esc}[1;32m●${esc}[0m Adresse IP locale      : ${esc}[1;37m\4${esc}[0m
-    ${esc}[1;36m●${esc}[0m Interface Web STEvE_OS : ${esc}[1;33mhttp://\4:9339${esc}[0m
+  \e{bold}\e{green}●\e{reset} Adresse IP locale      : \e{bold}\e{white}\4\e{reset}
+  \e{bold}\e{cyan}●\e{reset} Interface Web STEvE_OS : \e{bold}\e{yellow}http://\4:9339\e{reset}
 
-  Ouvrez ce lien dans un navigateur pour vous connecter et administrer votre NAS.
+  Connectez-vous via l'interface Web pour administrer votre NAS.
   Console locale : saisissez vos identifiants administrateur ci-dessous.
 
 '';
+
+  # Service de mise à jour dynamique de la bannière avec la véritable IP LAN (ignore docker0 & loopback)
+  systemd.services.steveos-issue-update = {
+    description = "Mise à jour de la bannière console STEvE_OS avec l'adresse IP réseau";
+    after = [ "network.target" "network-online.target" ];
+    wants = [ "network-online.target" ];
+    wantedBy = [ "multi-user.target" ];
+    path = with pkgs; [ iproute2 gawk gnugrep hostname util-linux systemd coreutils ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+    script = ''
+      mkdir -p /run/issue.d
+
+      get_lan_ip() {
+        local ip=$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i=="src") print $(i+1)}')
+        if [ -n "$ip" ] && [[ "$ip" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]] && [[ "$ip" != 127.* ]] && [[ "$ip" != 172.17.* ]] && [[ "$ip" != 169.254.* ]]; then
+          echo "$ip"
+          return
+        fi
+
+        for candidate in $(ip -4 -o addr show scope global 2>/dev/null | awk '{split($4, a, "/"); print a[1]}'); do
+          if [[ "$candidate" != 127.* ]] && [[ "$candidate" != 172.17.* ]] && [[ "$candidate" != 169.254.* ]]; then
+            echo "$candidate"
+            return
+          fi
+        done
+
+        for candidate in $(hostname -I 2>/dev/null); do
+          if [[ "$candidate" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]] && [[ "$candidate" != 127.* ]] && [[ "$candidate" != 172.17.* ]] && [[ "$candidate" != 169.254.* ]]; then
+            echo "$candidate"
+            return
+          fi
+        done
+
+        echo ""
+      }
+
+      IP=$(get_lan_ip)
+      if [ -n "$IP" ]; then
+        cat << EOF > /run/issue.d/10-steveos.issue
+\e{bold}\e{lightmagenta}╔══════════════════════════════════════════════════════════════════════════════╗\e{reset}
+\e{bold}\e{lightmagenta}║\e{reset}                   \e{bold}\e{white}🚀 STEvE_OS NAS Edition — Tableau de Bord\e{reset}                  \e{bold}\e{lightmagenta}║\e{reset}
+\e{bold}\e{lightmagenta}╚══════════════════════════════════════════════════════════════════════════════╝\e{reset}
+
+  \e{bold}\e{green}●\e{reset} Adresse IP locale      : \e{bold}\e{white}''${IP}\e{reset}
+  \e{bold}\e{cyan}●\e{reset} Interface Web STEvE_OS : \e{bold}\e{yellow}http://''${IP}:9339\e{reset}
+
+  Connectez-vous via l'interface Web pour administrer votre NAS.
+  Console locale : saisissez vos identifiants administrateur ci-dessous.
+
+EOF
+      fi
+    '';
+  };
 }
