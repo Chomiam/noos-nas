@@ -170,5 +170,8 @@ in
     libraw
     ffmpeg
     yt-dlp
+
+    # Visualiseur universel de documents bureautiques
+    libreoffice-still
   ];
 }
