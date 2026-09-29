@@ -15,14 +15,15 @@
 
 ---
 
-## 🧬 Règle n°2 : Vérification systématique `nix-ld` pour chaque paquet ajouté
+## 🧬 Règle n°2 : Vérification ciblée `nix-ld` pour chaque paquet ajouté
 - **Pour chaque paquet système, utilitaire CLI, codec, pilote ou bibliothèque ajouté à la configuration NixOS (`environment.systemPackages` ou dans un module de service/matériel) :**
-  > ⚠️ **SE POSER SYSTÉMATIQUEMENT LA QUESTION :**  
-  > *« Ce paquet fournit-il des bibliothèques dynamiques partagées (`.so`) susceptibles d'être recherchées par un binaire externe, un script tiers (Python, Node.js), un outil de monitoring, un agent distant ou une application conteneurisée ? »*
+  > ⚠️ **SE POSER SYSTÉMATIQUEMENT LA QUESTION DE DISCERNEMENT :**  
+  > *« Est-ce que je vais vraiment avoir des problèmes si je ne le mets PAS dans `nix-ld` ? »*
   
-- **Si OUI (ou en cas de doute raisonnable pour tout outil système, crypto, média, GPU, stockage, compression) :**
-  - Ajouter immédiatement la bibliothèque correspondante dans la liste `programs.nix-ld.libraries` du module [`modules/services/nix-ld.nix`](file:///home/chomiam/Projects/steveos-nas/modules/services/nix-ld.nix).
-  - Cela garantit une compatibilité binaire universelle transparente sur le NAS et évite les erreurs `No such file or directory` dues à l'isolation stricte de NixOS.
+- **Critères de décision :**
+  - **OUI, l'ajouter** : si le paquet fournit des bibliothèques dynamiques (`.so`) indispensables à des binaires tiers non-Nix précompilés, des scripts externes (Python, Node.js natif, VS Code Server), des pilotes GPU ou des middlewares réseau/crypto dont l'absence provoquerait un crash `No such file or directory` ou `error while loading shared libraries`.
+  - **NON, ne pas surcharger** : s'il s'agit d'un utilitaire purement autonome, d'un outil CLI sans bibliothèques partagées exportées, ou d'une dépendance strictement interne et hermétique à NixOS.
+  - En cas d'ajout justifié, inscrire la bibliothèque dans `programs.nix-ld.libraries` du module [`modules/services/nix-ld.nix`](file:///home/chomiam/Projects/steveos-nas/modules/services/nix-ld.nix).
 
 ---
 
