@@ -43,6 +43,7 @@
       nixosConfigurations = {
         ${baseVars.hostName} = nasSystem;
         nas = nasSystem;
+        nixnas = nasSystem;
         default = nasSystem;
       };
 
