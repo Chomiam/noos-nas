@@ -1,0 +1,71 @@
+# =============================================================================
+# 💾 EXEMPLE DE CONFIGURATION LOCALE DES DISQUES (hosts/nas/storage.local.nix)
+# =============================================================================
+# Pour utiliser ce fichier sur votre NAS :
+#   cp hosts/nas/storage.local.nix.example hosts/nas/storage.local.nix
+#   (adaptez ensuite les UUIDs et chemins selon votre matériel)
+#
+# 🛡️ SÉCURITÉ & MISES À JOUR :
+# Ce fichier (storage.local.nix) est dans le .gitignore.
+# Il ne sera JAMAIS suivi ni écrasé lors d'un 'git pull' ou d'une mise à jour
+# du dépôt partagé STEvE_OS NAS.
+# =============================================================================
+
+{ config, lib, pkgs, ... }:
+
+{
+  # ---------------------------------------------------------------------------
+  # EXEMPLE 1 : Système de fichiers Btrfs (RAID ou disque simple, compression)
+  # ---------------------------------------------------------------------------
+  # fileSystems."/mnt/storage" = {
+  #   device = "/dev/disk/by-label/STORAGE"; # ou "/dev/disk/by-uuid/XXXX-XXXX" ou "/dev/vg1/storage"
+  #   fsType = "btrfs";
+  #   options = [
+  #     "defaults"
+  #     "compress=zstd"
+  #     "noatime"
+  #     "nofail" # Permet au système de démarrer même si le disque n'est pas branché
+  #   ];
+  # };
+
+  # ---------------------------------------------------------------------------
+  # EXEMPLE 2 : Système de fichiers Ext4 (Standard, LVM ou RAID mdadm)
+  # ---------------------------------------------------------------------------
+  # fileSystems."/mnt/storage" = {
+  #   device = "/dev/vg1/storage"; # Volume logique LVM2 ou "/dev/md0" ou UUID
+  #   fsType = "ext4";
+  #   options = [
+  #     "defaults"
+  #     "noatime"
+  #     "nofail"
+  #   ];
+  # };
+
+  # ---------------------------------------------------------------------------
+  # EXEMPLE 3 : Système de fichiers XFS (Haute performance gros fichiers)
+  # ---------------------------------------------------------------------------
+  # fileSystems."/mnt/storage" = {
+  #   device = "/dev/disk/by-label/STORAGE_XFS";
+  #   fsType = "xfs";
+  #   options = [
+  #     "defaults"
+  #     "noatime"
+  #     "nofail"
+  #   ];
+  # };
+
+  # ---------------------------------------------------------------------------
+  # EXEMPLE 4 : Plusieurs disques ou plusieurs points de montage
+  # ---------------------------------------------------------------------------
+  # fileSystems."/mnt/storage" = {
+  #   device = "/dev/disk/by-label/DATA";
+  #   fsType = "ext4";
+  #   options = [ "defaults" "noatime" "nofail" ];
+  # };
+  #
+  # fileSystems."/mnt/backups" = {
+  #   device = "/dev/disk/by-label/BACKUP";
+  #   fsType = "btrfs";
+  #   options = [ "defaults" "compress=zstd" "noatime" "nofail" ];
+  # };
+}

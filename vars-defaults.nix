@@ -61,6 +61,18 @@
 
   # 💾 Stockage & Maintenance des Disques
   storage = {
+    # Déclaration optionnelle des disques/volumes à monter de manière persistante.
+    # Supporte TOUS les systèmes de fichiers (btrfs, ext4, xfs, zfs, etc.).
+    # Laissé vide par défaut afin de ne pas écraser les montages locaux lors des mises à jour.
+    disks = [
+      # Exemple de montage persistant :
+      # {
+      #   device = "/dev/disk/by-label/STORAGE"; # ou "/dev/vg1/storage", "/dev/disk/by-uuid/..."
+      #   mountPoint = "/mnt/storage";
+      #   fsType = "btrfs"; # ou "ext4", "xfs", "zfs", etc.
+      #   options = [ "defaults" "compress=zstd" "noatime" "nofail" ];
+      # }
+    ];
     smartd = {
       enable = true;
       notifications = true;

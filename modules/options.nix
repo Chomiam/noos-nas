@@ -78,6 +78,32 @@ with lib;
         interval = mkOption { type = types.str; default = "monthly"; };
       };
       zfsAutoTrim = mkOption { type = types.bool; default = true; };
+      disks = mkOption {
+        type = types.listOf (types.submodule {
+          options = {
+            device = mkOption {
+              type = types.str;
+              description = "Chemin du périphérique ou volume (ex: /dev/disk/by-label/STORAGE, /dev/vg1/storage, /dev/disk/by-uuid/...)";
+            };
+            mountPoint = mkOption {
+              type = types.str;
+              description = "Point de montage (ex: /mnt/storage)";
+            };
+            fsType = mkOption {
+              type = types.str;
+              default = "auto";
+              description = "Système de fichiers (btrfs, ext4, xfs, zfs, etc.)";
+            };
+            options = mkOption {
+              type = types.listOf types.str;
+              default = [ "defaults" "nofail" ];
+              description = "Options de montage du système de fichiers";
+            };
+          };
+        });
+        default = [];
+        description = "Liste déclarative des volumes de stockage utilisateur à monter de manière persistante";
+      };
     };
 
     services = {

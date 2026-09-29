@@ -4,3 +4,5 @@ result-*
 .direnv/
 *.swp
 *.bak
+*.local.nix
+hosts/nas/storage.local.nix

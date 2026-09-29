@@ -17,6 +17,20 @@
     strictLanOnly = false;
   };
 
+  # Stockage & Volumes de données persistants (optionnel)
+  # Vous pouvez déclarer vos disques ici ou dans hosts/nas/storage.local.nix.
+  # Supporte tout système de fichiers (btrfs, ext4, xfs, zfs, etc.)
+  # storage = {
+  #   disks = [
+  #     {
+  #       device = "/dev/disk/by-label/STORAGE"; # ou "/dev/vg1/storage"
+  #       mountPoint = "/mnt/storage";
+  #       fsType = "btrfs"; # "ext4", "xfs", etc.
+  #       options = [ "defaults" "compress=zstd" "noatime" "nofail" ];
+  #     }
+  #   ];
+  # };
+
   # Services activés
   services = {
     dashboard = {

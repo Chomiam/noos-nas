@@ -58,6 +58,7 @@
         interval = vars.storage.btrfsScrub.interval or "monthly";
       };
       zfsAutoTrim = vars.storage.zfsAutoTrim or true;
+      disks = vars.storage.disks or [];
     };
 
     services = {
