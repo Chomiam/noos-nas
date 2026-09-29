@@ -19,6 +19,10 @@
 
   # Services activés
   services = {
+    dashboard = {
+      enable = true;
+      port = 9339;
+    };
     samba = {
       enable = true;
       sharesPath = "/mnt/storage/shares";

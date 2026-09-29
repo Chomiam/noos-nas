@@ -3,6 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-26.05";
+    steveos-nas-dashboard.url = "path:/home/chomiam/Projects/steveos-nas-dashboard";
   };
 
   outputs = { self, nixpkgs, ... }@inputs:
@@ -31,6 +32,7 @@
           specialArgs = { inherit inputs vars; };
           modules = [
             { nixpkgs.hostPlatform = "x86_64-linux"; }
+            inputs.steveos-nas-dashboard.nixosModules.default
             ./hosts/nas/configuration.nix
           ];
         };

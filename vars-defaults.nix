@@ -78,6 +78,11 @@
 
   # 🌐 Services Réseau & Partages NAS
   services = {
+    # Tableau de bord web STEvE_OS
+    dashboard = {
+      enable = true;
+      port = 9339;
+    };
     # Partage de fichiers Windows / macOS / Linux
     samba = {
       enable = true;

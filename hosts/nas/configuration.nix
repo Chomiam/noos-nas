@@ -114,4 +114,13 @@
       };
     };
   };
+
+  # =========================================================================
+  # 🚀 TABLEAU DE BORD STEvE_OS NAS EDITION (PORT 9339)
+  # =========================================================================
+  services.steveos-nas-dashboard = {
+    enable = vars.services.dashboard.enable or true;
+    port = vars.services.dashboard.port or 9339;
+    openFirewall = true;
+  };
 }
