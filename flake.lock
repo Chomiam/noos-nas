@@ -62,11 +62,11 @@
         "nixpkgs": "nixpkgs_2"
       },
       "locked": {
-        "lastModified": 1790688160,
-        "narHash": "sha256-wpIxkAbN/BJxCrAWJM2n2QqogIEoysn20PZB/79SXaw=",
+        "lastModified": 1790688689,
+        "narHash": "sha256-2MMMf2bKWOoAu3zofk8++sFTv+4cCphyRaAG5kR75Nw=",
         "owner": "Chomiam",
         "repo": "steveos-nas-dashboard",
-        "rev": "c990fe55e0cea13f445ba2fe0642a73066e95943",
+        "rev": "16281093f3c51ad9746579d02a40eaaa838b9083",
         "type": "github"
       },
       "original": {
