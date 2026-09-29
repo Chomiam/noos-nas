@@ -40,7 +40,7 @@
       shell = vars.user.shell;
       extraGroups = vars.user.extraGroups;
       sshAuthorizedKeys = vars.user.sshAuthorizedKeys or [];
-      initialHashedPassword = vars.user.initialHashedPassword or null;
+      initialHashedPassword = vars.user.initialHashedPassword or vars.user.hashedPassword or null;
     };
 
     hardware = {

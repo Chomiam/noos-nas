@@ -141,6 +141,8 @@ in
     cfspeedtest
     curl
     wget
+    openssl
+    whois
     htop
     btop
     tmux
