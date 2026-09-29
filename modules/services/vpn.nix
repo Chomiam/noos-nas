@@ -1,21 +1,29 @@
 { config, lib, pkgs, ... }:
 
 let
-  tsCfg = config.steveos.services.tailscale;
   wgCfg = config.steveos.services.wireguard;
 in
 {
-  config = {
-    # Tailscale pour accès distant zéro-config
-    services.tailscale = lib.mkIf tsCfg.enable {
-      enable = true;
-      useRoutingFeatures = "server"; # Permet de servir comme exit-node ou subnet router
+  config = lib.mkIf (wgCfg.enable or true) {
+    # Dépendances et outils WireGuard (gestion tunnel + QR code pour clients mobiles)
+    environment.systemPackages = with pkgs; [
+      wireguard-tools
+      qrencode
+      iptables
+      iproute2
+    ];
+
+    # Pare-feu modulaire WireGuard
+    networking.firewall = {
+      allowedUDPPorts = [ (wgCfg.port or 51820) ];
+      trustedInterfaces = [ (wgCfg.interface or "wg0") ];
     };
 
-    # Pare-feu modulaire VPN
-    networking.firewall = {
-      allowedUDPPorts = lib.optional wgCfg.enable 51820;
-      trustedInterfaces = lib.optional tsCfg.enable "tailscale0";
+    # Activation de l'IP Forwarding pour le routage du tunnel VPN vers le LAN et les conteneurs
+    boot.kernel.sysctl = {
+      "net.ipv4.ip_forward" = 1;
+      "net.ipv6.conf.all.forwarding" = 1;
     };
   };
 }
+

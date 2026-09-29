@@ -107,15 +107,8 @@
       podman = {
         enable = vars.services.podman.enable or false;
       };
-      cockpit = {
-        enable = vars.services.cockpit.enable or false;
-        port = vars.services.cockpit.port or 9090;
-      };
-      tailscale = {
-        enable = vars.services.tailscale.enable or false;
-      };
       wireguard = {
-        enable = vars.services.wireguard.enable or false;
+        enable = vars.services.wireguard.enable or true;
       };
       netdata = {
         enable = vars.services.netdata.enable or false;

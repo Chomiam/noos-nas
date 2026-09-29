@@ -150,15 +150,11 @@ with lib;
       podman = {
         enable = mkOption { type = types.bool; default = false; };
       };
-      cockpit = {
-        enable = mkOption { type = types.bool; default = false; };
-        port = mkOption { type = types.int; default = 9090; };
-      };
-      tailscale = {
-        enable = mkOption { type = types.bool; default = false; };
-      };
       wireguard = {
-        enable = mkOption { type = types.bool; default = false; };
+        enable = mkOption { type = types.bool; default = true; description = "Serveur VPN WireGuard pour accès distant sécurisé"; };
+        port = mkOption { type = types.int; default = 51820; description = "Port d'écoute UDP de WireGuard"; };
+        interface = mkOption { type = types.str; default = "wg0"; description = "Nom de l'interface WireGuard"; };
+        ip = mkOption { type = types.str; default = "10.100.0.1/24"; description = "Sous-réseau IP du tunnel WireGuard"; };
       };
       netdata = {
         enable = mkOption { type = types.bool; default = false; };

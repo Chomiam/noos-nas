@@ -57,8 +57,9 @@
     docker = {
       enable = true;
     };
-    cockpit = {
-      enable = false;
+    wireguard = {
+      enable = true;
+      port = 51820;
     };
   };
 }

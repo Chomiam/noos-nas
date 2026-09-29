@@ -139,18 +139,10 @@
       enable = false;
     };
 
-    # Interfaces Web d'administration
-    cockpit = {
-      enable = false; # Désactivé au profit du Dashboard STEvE_OS (port 9339)
-      port = 9090;
-    };
-
-    # Accès distant sécurisé
-    tailscale = {
-      enable = false;
-    };
+    # Accès distant sécurisé via WireGuard
     wireguard = {
-      enable = false;
+      enable = true;
+      port = 51820;
     };
 
     # Supervision & Monitoring
