@@ -135,6 +135,12 @@
     openFirewall = true;
   };
 
+  # Dépendance explicite : s'assurer que libvirtd est prêt quand le dashboard démarre
+  systemd.services.steveos-nas-dashboard = {
+    wants = [ "libvirtd.service" ];
+    after = [ "libvirtd.service" ];
+  };
+
   # =========================================================================
   # 🖥️ CONSOLE TTY & ACCUEIL DU SYSTÈME INSTALLÉ
   # =========================================================================

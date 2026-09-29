@@ -70,6 +70,12 @@ in
       onShutdown = "shutdown";
     };
 
+    # Démarrage automatique garanti du service et du socket libvirtd au boot
+    systemd.services.libvirtd.wantedBy = [ "multi-user.target" ];
+    systemd.sockets.libvirtd.wantedBy = [ "sockets.target" "multi-user.target" ];
+    systemd.sockets.libvirtd-ro.wantedBy = [ "sockets.target" "multi-user.target" ];
+    systemd.sockets.libvirtd-admin.wantedBy = [ "sockets.target" "multi-user.target" ];
+
     # 5. Paquets système requis pour l'administration et la console web
     environment.systemPackages = with pkgs; [
       qemu_kvm
