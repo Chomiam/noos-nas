@@ -91,6 +91,9 @@ Ce guide regroupe les apprentissages essentiels, l'architecture des dépôts, le
    - La machine de dev et le NAS ne doivent jamais compiler Rust en local. Toujours attendre la fin du build Cachix sur GitHub Actions avant de bumper `flake.lock`.
 8. **Déploiement réservé à l'utilisateur (Règle n°5 d'AGENTS.md) :**
    - L'agent ne doit jamais exécuter `nixos-rebuild switch` ou `git pull` directement sur le NAS distant via SSH. C'est l'utilisateur qui déclenche la mise à jour depuis le Dashboard.
+9. **Paquets déclaratifs optionnels codés en dur dans des listes statiques :**
+   - *Erreur passée* : Déclarer une option `cfg.services.<pkg>.enable` (ex: `goverlay`), mais laisser `<pkg>` en dur dans une liste statique `users.users.<user>.packages` ou `environment.systemPackages` d'un module connexe (ex: `modules/gaming/default.nix`). Résultat : même si l'utilisateur désactive l'option via `vars.nix` (`goverlay = false`), le paquet et toutes ses dépendances lourdes ou cassées (ex: `lazarus-qt6`) continuent d'être injectés dans la dérivation et compilés lors d'un `nh os switch` ou `nixos-rebuild`.
+   - *Règle* : Tout paquet associé à une option configurable doit être conditionné systématiquement avec `lib.optional cfg.<option>.enable <paquet>` dans TOUS les modules sans exception.
 
 ---
 
