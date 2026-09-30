@@ -158,6 +158,12 @@ in
     tree
     nh
 
+    # Outils Réseau & Diagnostic de Bande Passante
+    vnstat
+    iftop
+    bmon
+    ethtool
+
     # Outils Stockage, RAID & Systèmes de fichiers
     mdadm
     lvm2
