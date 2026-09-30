@@ -86,4 +86,23 @@
   3. **Objectif fondamental** :
      - Garantir que le NAS de l'utilisateur télécharge instantanément le binaire précompilé depuis Cachix au lieu de compiler Rust localement sur son processeur lors du clic de mise à jour sur le Dashboard Web.
 
+---
+
+## 💡 Règle n°8 : Explication Pédagogique Systématique lors de la Résolution d'un Bug
+- **À chaque résolution de bug, dysfonctionnement ou anomalie, prendre impérativement le temps d'expliquer à l'utilisateur :**
+  1. **Le Problème constaté** : description concrète du comportement défaillant, messages d'erreurs et contexte déclencheur.
+  2. **La Cause racine (RCA)** : explication technique détaillée de la faille (pourquoi le code, le service ou la configuration a dysfonctionné).
+  3. **Le Correctif appliqué** : modifications précises apportées, rôle des changements et justification de la solution pérenne adoptée.
+
+---
+
+## 🔄 Règle n°9 : Actualisation Continue de la Base de Connaissances (`steveos-knowledge`)
+- **À chaque bogue corrigé, retour d'expérience (REX) ou amélioration architecturale sur les projets de l'écosystème STEvE_OS :**
+  - Mettre à jour systématiquement le skill [`steveos-knowledge`](file:///home/chomiam/Projects/steveos-nas/.agents/skills/steveos-knowledge/SKILL.md) (et sa copie globale).
+  - Y consigner :
+    - Les pièges techniques rencontrés et les erreurs à ne plus reproduire (anti-patterns).
+    - Les recettes et patterns validés.
+  - Objectif : capitaliser les acquis au fil des itérations pour éviter toute récidive.
+
+
 
