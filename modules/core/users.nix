@@ -99,7 +99,7 @@ in
                "${u.homeDirectory}/telechargements"
 
     # Propriété déclarative de /mnt et de ses montages pour l'utilisateur et le groupe storage (setgid 2775)
-    mkdir -p /mnt /mnt/storage /mnt/storage/shares /mnt/storage/media /mnt/storage/sftp
+    mkdir -p /mnt /mnt/storage /mnt/storage/shares /mnt/storage/media /mnt/storage/sftp /mnt/storage/games
     chown ${u.username}:storage /mnt
     chmod 2775 /mnt
     for d in /mnt/*; do
@@ -113,6 +113,7 @@ in
   # 📁 Règles systemd-tmpfiles déclaratives pour /home, dossiers personnels et /mnt
   systemd.tmpfiles.rules = [
     "d /etc/nixos 0775 ${u.username} users - -"
+    "d /mnt/storage/games 2775 ${u.username} storage - -"
     "d /home 0755 ${u.username} users - -"
     "z /home 0755 ${u.username} users - -"
     "d ${u.homeDirectory} 0755 ${u.username} users - -"
