@@ -131,6 +131,13 @@ Ce guide regroupe les apprentissages essentiels, l'architecture des dépôts, le
     - *Règle fondamentale* : Dans tout démon d'asservissement des ventilateurs, forcer inconditionnellement la vitesse à 100% (255/255) si n'importe quelle sonde franchit 80°C, afin d'écarter tout risque de destruction matérielle par mauvaise courbe utilisateur.
 15. **Persistance des Contrôleurs `hwmon` entre Redémarrages :**
     - *Règle* : Les index `/sys/class/hwmon/hwmonX` changent selon l'ordre d'initialisation des pilotes par le noyau Linux. Toujours associer les ventilateurs et sondes par `chip_name` (ex: `nct6775`, `k10temp`, `coretemp`) et index de canal (`fan1`, `temp1`) plutôt que par le numéro volatil de hwmon.
+16. **Gestion des Ventilateurs GPU et Contrôleurs Autonomes (Intel Arc / i915 / VBIOS) :**
+    - *Erreur passée* : Détecter un ventilateur GPU uniquement via la présence de `fanX_input` (tachymètre RPM) et supposer qu'il est réglable par PWM logiciel via `pwmX`.
+    - *Impact* : Les ventilateurs des cartes graphiques dédiées Intel Arc (pilotes `i915` et `xe`) ne fournissent aucun fichier sysfs `pwmX` car leur régulation thermique est asservie directement en boucle fermée par le microcode matériel (VBIOS). Dans l'interface, les boutons de profils (Silencieux, Équilibré, Freeze) et le test de vitesse restaient cliquables mais n'avaient aucun effet mécanique.
+    - *Règle & Pattern* :
+      1. Tester systématiquement si `pwm_file.exists()` ET si le fichier est accessible en écriture (`fs::OpenOptions::new().write(true).open(&pwm_file).is_ok()`).
+      2. Identifier les cartes GPU (`i915`, `xe`) et qualifier l'état `is_autonomous_firmware = true`.
+      3. Dans l'UI, afficher un encart d'information Catppuccin explicatif (`🛡️ Régulation Autonome VBIOS`) et désactiver l'écrasement manuel ou le test PWM avec une mention pédagogique, tout en continuant à afficher le tachymètre RPM en temps réel.
 
 ---
 

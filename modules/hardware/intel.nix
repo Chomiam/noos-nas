@@ -27,9 +27,10 @@ in
 
     # 🛠️ Utilitaires d'inspection et monitoring GPU en temps réel
     environment.systemPackages = with pkgs; [
-      libva-utils       # Commande 'vainfo' pour lister tous les profils de décodage/encodage supportés
-      intel-gpu-tools   # Commande 'intel_gpu_top' pour suivre la charge du moteur de transcodage (Video / VideoEnhance)
-      clinfo            # Commande 'clinfo' pour vérifier les plateformes de calcul OpenCL
+      libva-utils          # Commande 'vainfo' pour lister tous les profils de décodage/encodage supportés
+      intel-gpu-tools      # Commande 'intel_gpu_top' pour suivre la charge du moteur de transcodage (Video / VideoEnhance)
+      clinfo               # Commande 'clinfo' pour vérifier les plateformes de calcul OpenCL
+      nvtopPackages.intel  # Moniteur interactif temps réel (fréquence GPU, ventilateurs, VRAM, processus de transcodage)
     ];
 
     # ⚙️ Variables d'environnement optimales pour le transcodage matériel Intel
