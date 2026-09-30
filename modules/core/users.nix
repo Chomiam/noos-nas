@@ -110,10 +110,44 @@ in
     done
   '';
 
-  # 📁 Règles systemd-tmpfiles déclaratives pour /home, dossiers personnels et /mnt
+  # 👥 Script d'activation pour la résilience et persistance des utilisateurs créés via le Dashboard
+  system.activationScripts.steveosUsersSync = lib.stringAfter [ "users" "groups" ] ''
+    mkdir -p /var/lib/steveos
+    chmod 0750 /var/lib/steveos
+
+    REGISTRY_FILE="/var/lib/steveos/users-registry.json"
+    if [ -f "$REGISTRY_FILE" ]; then
+      # Restauration et synchronisation des groupes personnalisés enregistrés
+      for grp in $(${pkgs.jq}/bin/jq -r '(.custom_group_descriptions // {}) | keys[]' "$REGISTRY_FILE" 2>/dev/null); do
+        if [ -n "$grp" ] && ! getent group "$grp" >/dev/null 2>&1; then
+          ${pkgs.shadow}/bin/groupadd "$grp" 2>/dev/null || true
+        fi
+      done
+
+      # Restauration et vérification des comptes utilisateurs enregistrés
+      for usr in $(${pkgs.jq}/bin/jq -r '(.users // {}) | keys[]' "$REGISTRY_FILE" 2>/dev/null); do
+        if [ -n "$usr" ] && [ "$usr" != "root" ] && [ "$usr" != "${u.username}" ]; then
+          if ! id "$usr" >/dev/null 2>&1; then
+            allow_shell=$(${pkgs.jq}/bin/jq -r "(.users[\"$usr\"].allow_shell // false)" "$REGISTRY_FILE" 2>/dev/null)
+            if [ "$allow_shell" = "true" ]; then
+              sh="/run/current-system/sw/bin/bash"
+            else
+              sh="/run/current-system/sw/bin/nologin"
+            fi
+            ${pkgs.shadow}/bin/useradd -m -s "$sh" -g users "$usr" 2>/dev/null || true
+            chmod 0750 "/home/$usr" 2>/dev/null || true
+          fi
+        fi
+      done
+    fi
+  '';
+
+  # 📁 Règles systemd-tmpfiles déclaratives pour /home, dossiers personnels, /mnt et /var/lib/steveos
   systemd.tmpfiles.rules = [
+    "d /var/lib/steveos 0750 root wheel - -"
     "d /etc/nixos 0775 ${u.username} users - -"
     "d /mnt/storage/games 2775 ${u.username} storage - -"
+    "d /mnt/storage/shares 2775 ${u.username} storage - -"
     "d /home 0755 ${u.username} users - -"
     "z /home 0755 ${u.username} users - -"
     "d ${u.homeDirectory} 0755 ${u.username} users - -"
