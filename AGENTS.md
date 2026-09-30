@@ -53,3 +53,22 @@
   3. Informer l'utilisateur que la mise à jour est disponible et prête sur GitHub.
 - **C'est EXCLUSIVEMENT l'utilisateur qui déclenche et applique la mise à jour sur son NAS en cliquant sur le bouton unique du Dashboard Web STEvE_OS.**
 
+---
+
+## 🏷️ Règle n°6 : Traçabilité des Anomalies & Identifiant Unique de Résolution (Bug Tracking)
+- **Déclenchement systématique dès qu'un problème, dysfonctionnement ou bug est identifié** (que l'anomalie provienne de la configuration déclarative NixOS `steveos-nas` ou du moteur/UI `steveos-nas-dashboard`) :
+  1. **Établissement préalable d'un Rapport d'Incident avec Identifiant Unique :**
+     - Format standardisé de l'identifiant : `[BUG-YYYYMMDD-XX]` (ex: `[BUG-20260930-01]`).
+     - Ce rapport récapitule synthétiquement :
+       - **Symptôme & Contexte** : Message d'erreur exact, comportement inattendu, logs système ou capture d'écran.
+       - **Composant(s) impacté(s)** : Configuration NixOS (`steve_os-nix`) et/ou Dashboard Web (`steveos-nas-dashboard`).
+       - **Cause racine (RCA)** : Origine technique précise de la défaillance.
+       - **Stratégie de résolution** : Correctifs appliqués et mesures de repli (fallbacks).
+  2. **Traçabilité obligatoire dans tous les Commits associés :**
+     - Chaque commit Git lié à la correction — qu'il se trouve dans `steveos-nas` ou dans `steveos-nas-dashboard` — doit **obligatoirement mentionner cet identifiant unique** :
+       - Dans l'entête : `fix(scope)[BUG-YYYYMMDD-XX]: résumé court du correctif`
+       - Dans le corps explicatif : mention claire de l'incident et lien avec le rapport.
+  3. **Objectif architectural :**
+     - Garantir une traçabilité totale entre les signalements et le code, faciliter l'audit de l'historique Git et éviter toute ambiguïté lors de la corrélation croisée entre le dépôt NixOS et le Dashboard.
+
+
