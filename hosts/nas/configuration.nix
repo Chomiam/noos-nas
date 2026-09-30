@@ -227,4 +227,14 @@ EOF
       done
     '';
   };
+
+  # =========================================================================
+  # ⚙️ ENVIRONNEMENT SYSTEMD PAR DÉFAUT (CHEMINS NIXOS COMPLETS)
+  # =========================================================================
+  systemd.settings.Manager = {
+    DefaultEnvironment = "PATH=/run/wrappers/bin:/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin:/usr/bin:/bin";
+  };
 }
+
+
+
