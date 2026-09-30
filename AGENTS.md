@@ -11,7 +11,7 @@
   ```bash
   nix eval .#nixosConfigurations.steveos-nas.config.system.build.toplevel.drvPath
   ```
-- Les compilations binaires lourdes et la mise en cache Nix sont obligatoirement déléguées aux workflows distants via **GitHub Actions** et **Cachix** (`chomiamos`).
+- Les compilations binaires lourdes sont obligatoirement déléguées aux workflows distants via **GitHub Actions**.
 
 ---
 
