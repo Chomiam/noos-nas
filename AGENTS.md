@@ -55,20 +55,21 @@
 
 ---
 
-## 🏷️ Règle n°6 : Traçabilité des Anomalies & Identifiant Unique de Résolution (Bug Tracking)
+## 🏷️ Règle n°6 : Traçabilité des Anomalies & Création Obligatoire de GitHub Issue (Bug Tracking)
 - **Déclenchement systématique dès qu'un problème, dysfonctionnement ou bug est identifié** (que l'anomalie provienne de la configuration déclarative NixOS `steveos-nas` ou du moteur/UI `steveos-nas-dashboard`) :
-  1. **Établissement préalable d'un Rapport d'Incident avec Identifiant Unique :**
-     - Format standardisé de l'identifiant : `[BUG-YYYYMMDD-XX]` (ex: `[BUG-20260930-01]`).
-     - Ce rapport récapitule synthétiquement :
+  1. **Création obligatoire préalable d'une GitHub Issue :**
+     - Ouvrir une GitHub Issue sur le dépôt concerné (via `gh issue create` ou l'interface web GitHub).
+     - Format du titre de l'Issue : `[BUG-YYYYMMDD-XX]: Résumé synthétique de l'anomalie` (ex: `[BUG-20260930-01]`).
+     - Le corps de l'Issue récapitule obligatoirement :
        - **Symptôme & Contexte** : Message d'erreur exact, comportement inattendu, logs système ou capture d'écran.
        - **Composant(s) impacté(s)** : Configuration NixOS (`steve_os-nix`) et/ou Dashboard Web (`steveos-nas-dashboard`).
-       - **Cause racine (RCA)** : Origine technique précise de la défaillance.
+       - **Cause racine (RCA)** : Origine technique précise de la défaillance après investigation.
        - **Stratégie de résolution** : Correctifs appliqués et mesures de repli (fallbacks).
   2. **Traçabilité obligatoire dans tous les Commits associés :**
-     - Chaque commit Git lié à la correction — qu'il se trouve dans `steveos-nas` ou dans `steveos-nas-dashboard` — doit **obligatoirement mentionner cet identifiant unique** :
-       - Dans l'entête : `fix(scope)[BUG-YYYYMMDD-XX]: résumé court du correctif`
-       - Dans le corps explicatif : mention claire de l'incident et lien avec le rapport.
+     - Chaque commit Git lié à la correction — qu'il se trouve dans `steveos-nas` ou dans `steveos-nas-dashboard` — doit **obligatoirement mentionner cet identifiant et le numéro de l'Issue** :
+       - Dans l'entête : `fix(scope)[BUG-YYYYMMDD-XX]: résumé court du correctif (#num_issue)`
+       - Dans le corps explicatif : mention claire de l'incident, de la RCA et lien/fermeture vers la GitHub Issue (`Closes #num_issue` ou `Fixes #num_issue`).
   3. **Objectif architectural :**
-     - Garantir une traçabilité totale entre les signalements et le code, faciliter l'audit de l'historique Git et éviter toute ambiguïté lors de la corrélation croisée entre le dépôt NixOS et le Dashboard.
+     - Garantir une traçabilité totale entre les signalements et le code, faciliter l'audit de l'historique Git et GitHub Issues, et éviter toute ambiguïté lors de la corrélation croisée entre le dépôt NixOS et le Dashboard.
 
 
