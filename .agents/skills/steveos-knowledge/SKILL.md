@@ -65,6 +65,12 @@ Ce guide regroupe les apprentissages essentiels, l'architecture des dépôts, le
      - Différencier l'arrêt volontaire (`ExitCode == 0` -> `stopped`) du crash/erreur (`ExitCode != 0`, `OOMKilled`, ou `dead` -> `error`).
      - Détecter la phase de démarrage (`starting`) : transition via actions utilisateur (start/restart), probe TCP non bloquant sur le port de jeu, et délai de warm-up de boot.
      - Adapter les boutons d'actions selon l'état réel (bouton "Voir Crash Log" sur erreur, "Console Boot" pendant le démarrage).
+8. **Performance de rendu & Pattern SWR (Stale-While-Revalidate) :**
+   - *Erreur passée* : Attendre la réponse réseau d'une API lourde (ex: `list_game_servers` qui interroge Docker) avant de rendre l'UI, laissant l'utilisateur devant un écran vide pendant 2 à 3 secondes.
+   - *Règle* :
+     - Hydrater immédiatement l'UI (0ms) depuis `localStorage` au chargement de l'onglet ou de la page.
+     - Déclencher la requête API en arrière-plan et rafraîchir le DOM de manière transparente à l'arrivée des données fraîches.
+     - Côté Backend Rust : grouper les inspections Docker en une seule commande batch (`docker inspect c1 c2 ...`), court-circuiter dès le début si la liste est vide, et mettre en cache mémoire (TTL) les catalogues ou fichiers statiques souvent relus sur disque.
 
 ### C. Gestion des Médias & Authentification
 6. **Streaming média (Lecteurs Audio, Vidéo, Visionneuse) :**
