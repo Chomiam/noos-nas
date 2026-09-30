@@ -193,6 +193,13 @@ pub fn interpolate_pwm(temp: f32, curve: &[CurvePoint]) -> u8 {
 
 ---
 
+### Affichage en ligne & inventaire matériel épuré (Dashboard) :
+- Privilégier une disposition horizontale pleine largeur (`.hw-row-item` avec pastilles flex-wrap) plutôt qu'une grille de cartes imposantes qui fragmentent la lecture sur la page d'accueil.
+- Décorer chaque ligne d'une bordure gauche thématique aux couleurs Catppuccin Mocha (CPU: mauve, Carte Mère: blue, RAM: yellow, GPU: peach, Réseau: teal, Stockage: sapphire).
+- **Filtrage réseau strict** : Toujours filtrer les interfaces virtuelles bruyantes (`docker0`, `veth*`, `virbr*`, `br-*`, `wg*`, `tun*`, `tap*`) via la détection `/sys/class/net/<iface>/device` côté backend (`is_physical`) et un filtre de repli côté frontend, afin de ne valoriser sur la page d'accueil que les adaptateurs physiques réels (`eno1`, `enp*`, `eth*`) avec leur débit négocié, IPv4 locale et adresse MAC.
+
+---
+
 ## 🔄 4. Protocole d'Actualisation Continue de ce Fichier
 
 À chaque fois qu'un bogue est résolu, qu'un écueil est identifié ou qu'une nouvelle architecture est introduite :
