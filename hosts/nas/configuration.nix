@@ -133,6 +133,7 @@
     enable = vars.services.dashboard.enable or true;
     port = vars.services.dashboard.port or 9339;
     openFirewall = true;
+    user = vars.user.username;
   };
 
   # Dépendance explicite : s'assurer que libvirtd est prêt quand le dashboard démarre

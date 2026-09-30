@@ -94,6 +94,12 @@ Ce guide regroupe les apprentissages essentiels, l'architecture des dépôts, le
 9. **Paquets déclaratifs optionnels codés en dur dans des listes statiques :**
    - *Erreur passée* : Déclarer une option `cfg.services.<pkg>.enable` (ex: `goverlay`), mais laisser `<pkg>` en dur dans une liste statique `users.users.<user>.packages` ou `environment.systemPackages` d'un module connexe (ex: `modules/gaming/default.nix`). Résultat : même si l'utilisateur désactive l'option via `vars.nix` (`goverlay = false`), le paquet et toutes ses dépendances lourdes ou cassées (ex: `lazarus-qt6`) continuent d'être injectés dans la dérivation et compilés lors d'un `nh os switch` ou `nixos-rebuild`.
    - *Règle* : Tout paquet associé à une option configurable doit être conditionné systématiquement avec `lib.optional cfg.<option>.enable <paquet>` dans TOUS les modules sans exception.
+10. **Nom d'utilisateur et chemins personnels codés en dur dans une distribution partagée :**
+    - *Erreur passée* : Hardcoder un utilisateur par défaut (`chomiam`) ou des chemins `/home/chomiam` dans le backend Rust ou les options de service sans transmettre dynamiquement `vars.user.username` au dashboard. Résultat : lors d'une installation par un tiers (ex: `mow`), les commandes `runuser -u chomiam` échouent avec `user does not exist`, et l'activation déclarative NixOS purge le compte hôte non encore déclaré dans `vars.nix` de `/etc/passwd`.
+    - *Règle* :
+      1. Toujours propager `user = vars.user.username` depuis `hosts/nas/configuration.nix` vers les services applicatifs.
+      2. Dans le backend, vérifier l'existence de `STEVEOS_USER` dans `/etc/passwd` et prévoir un repli automatique vers le premier compte humain (UID >= 1000) et son véritable répertoire personnel.
+      3. Dans `modules/core/users.nix`, inclure un script d'activation de protection scannant `/home/*` pour restaurer immédiatement tout compte orphelin préexistant dans `/etc/passwd`.
 
 ---
 

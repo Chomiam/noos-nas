@@ -140,6 +140,18 @@ in
         fi
       done
     fi
+
+    # 🛡️ Protection anti-suppression : Restauration automatique de tout compte utilisateur préexistant dans /home
+    # Empêche NixOS de verrouiller ou purger un compte administrateur non encore déclaré dans vars.nix (ex: mow)
+    for h in /home/*; do
+      if [ -d "$h" ]; then
+        usr=$(basename "$h")
+        if [ -n "$usr" ] && [ "$usr" != "root" ] && [ "$usr" != "${u.username}" ] && [ "$usr" != "lost+found" ] && ! id "$usr" >/dev/null 2>&1; then
+          # Compte orphelin avec home valide : recréation automatique dans /etc/passwd avec droits de gestion
+          ${pkgs.shadow}/bin/useradd -M -d "$h" -s "/run/current-system/sw/bin/bash" -g users -G wheel,storage,video,render "$usr" 2>/dev/null || true
+        fi
+      fi
+    done
   '';
 
   # 📁 Règles systemd-tmpfiles déclaratives pour /home, dossiers personnels, /mnt et /var/lib/steveos

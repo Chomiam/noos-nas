@@ -7,6 +7,18 @@
 
   hostName = "steveos-nas";
 
+  # =========================================================================
+  # 👤 COMPTE ADMINISTRATEUR PRINCIPAL
+  # Définissez ici votre compte utilisateur personnel pour administrer le NAS.
+  # Si non renseigné, le compte par défaut de vars-defaults.nix est utilisé.
+  # =========================================================================
+  # user = {
+  #   username = "chomiam";               # Votre identifiant de connexion (ex: "mow", "admin")
+  #   fullName = "Administrateur NAS";    # Votre nom ou pseudonyme
+  #   homeDirectory = "/home/chomiam";    # /home/<username>
+  #   shell = "fish";                     # "fish" ou "bash"
+  # };
+
   # Choix du GPU pour le transcodage matériel :
   # - "intel"          : Intel QuickSync (iGPU UHD/Iris Xe, Core Ultra, N100, Arc A380/A770)
   # - "amd"            : AMD Radeon / APU (VA-API radeonsi, ROCm OpenCL)
