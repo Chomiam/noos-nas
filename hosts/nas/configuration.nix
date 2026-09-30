@@ -6,7 +6,9 @@
   # =========================================================================
 
   imports = [
-    ./hardware-configuration.nix
+    (if builtins.pathExists ../../hardware-configuration.nix
+     then ../../hardware-configuration.nix
+     else ./hardware-configuration.nix)
     ./storage.nix
     ../../modules
     ../../docker

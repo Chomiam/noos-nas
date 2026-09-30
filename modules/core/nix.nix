@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 {
   nix = {
@@ -29,5 +29,6 @@
   i18n.defaultLocale = config.steveos.defaultLocale;
   console.keyMap = config.steveos.keyboard.keyMap;
   networking.hostName = config.steveos.hostName;
+  networking.useDHCP = lib.mkDefault true;
   system.stateVersion = config.steveos.stateVersion;
 }

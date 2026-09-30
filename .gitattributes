@@ -1,0 +1,8 @@
+# 🛡️ Protection des fichiers de configuration spécifiques à chaque machine
+# Empêche tout écrasement ou conflit lors d'un 'git pull' ou 'git merge'
+vars.nix merge=ours
+hardware-configuration.nix merge=ours
+hosts/nas/hardware-configuration.nix merge=ours
+hosts/nas/storage.local.nix merge=ours
+firewall-rules.json merge=ours
+firewall-state.json merge=ours
