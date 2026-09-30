@@ -35,9 +35,14 @@ with lib;
     };
 
     user = {
-      username = mkOption { type = types.str; default = "chomiam"; };
-      fullName = mkOption { type = types.str; default = "Axel Valens"; };
-      homeDirectory = mkOption { type = types.str; default = "/home/chomiam"; };
+      username = mkOption { type = types.str; default = "chomiam"; description = "Identifiant de l'administrateur principal"; };
+      fullName = mkOption { type = types.str; default = "Axel Valens"; description = "Nom complet de l'administrateur"; };
+      homeDirectory = mkOption {
+        type = types.str;
+        default = "/home/${config.steveos.user.username}";
+        defaultText = lib.literalExpression ''"/home/${config.steveos.user.username}"'';
+        description = "Répertoire personnel de l'administrateur";
+      };
       shell = mkOption { type = types.str; default = "fish"; };
       initialHashedPassword = mkOption { type = types.nullOr types.str; default = null; };
       extraGroups = mkOption { type = types.listOf types.str; default = [ "wheel" "video" "render" "storage" "docker" ]; };

@@ -155,7 +155,7 @@ in
     for h in /home/*; do
       if [ -d "$h" ]; then
         usr=$(basename "$h")
-        if [ -n "$usr" ] && [ "$usr" != "root" ] && [ "$usr" != "${u.username}" ] && [ "$usr" != "lost+found" ] && ! id "$usr" >/dev/null 2>&1; then
+        if [ -n "$usr" ] && [ "$usr" != "root" ] && [ "$usr" != "${u.username}" ] && [ "$h" != "${u.homeDirectory}" ] && [ "$usr" != "lost+found" ] && ! id "$usr" >/dev/null 2>&1; then
           # Compte orphelin avec home valide : recréation automatique dans /etc/passwd avec droits de gestion
           ${pkgs.shadow}/bin/useradd -M -d "$h" -s "/run/current-system/sw/bin/bash" -g users -G wheel,storage,video,render "$usr" 2>/dev/null || true
         fi
@@ -182,7 +182,7 @@ in
       else
         BACKUP_USER=$(grep -oP 'username\s*=\s*"\K[^"]+' /etc/nixos/.vars.nix.backup 2>/dev/null || true)
         CURRENT_USER=$(grep -oP 'username\s*=\s*"\K[^"]+' /etc/nixos/vars.nix 2>/dev/null || true)
-        if [ -n "$CURRENT_USER" ] && { [ "$BACKUP_USER" = "$CURRENT_USER" ] || [ "$BACKUP_USER" = "chomiam" ]; }; then
+        if [ -n "$CURRENT_USER" ] && { [ "$BACKUP_USER" = "$CURRENT_USER" ] || [ -z "$BACKUP_USER" ]; }; then
           cp -f /etc/nixos/vars.nix /etc/nixos/.vars.nix.backup
           chmod 0600 /etc/nixos/.vars.nix.backup
         fi

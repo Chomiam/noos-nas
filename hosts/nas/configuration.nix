@@ -37,8 +37,12 @@
 
     user = {
       username = vars.user.username;
-      fullName = vars.user.fullName;
-      homeDirectory = vars.user.homeDirectory;
+      fullName = if (vars.user ? fullName && vars.user.fullName != null && vars.user.fullName != "")
+                 then vars.user.fullName
+                 else (if vars.user.username == "chomiam" then "Axel Valens" else "Administrateur STEvE_OS");
+      homeDirectory = if (vars.user ? homeDirectory && vars.user.homeDirectory != null && vars.user.homeDirectory != "")
+                      then vars.user.homeDirectory
+                      else "/home/${vars.user.username}";
       shell = vars.user.shell;
       extraGroups = vars.user.extraGroups;
       sshAuthorizedKeys = vars.user.sshAuthorizedKeys or [];

@@ -25,7 +25,7 @@
   user = {
     username = "chomiam";
     fullName = "Axel Valens";
-    homeDirectory = "/home/chomiam";
+    homeDirectory = null;
     shell = "fish";
     initialHashedPassword = null;
     extraGroups = [
