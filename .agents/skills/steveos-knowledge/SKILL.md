@@ -59,6 +59,12 @@ Ce guide regroupe les apprentissages essentiels, l'architecture des dépôts, le
    - *Règle* :
      - Toujours verrouiller les badges compacts avec `white-space: nowrap; display: inline-flex; align-items: center; gap: 5px;`.
      - Dans les tableaux où cohabitent des dizaines d'entrées système immuables et des règles utilisateur, structurer l'affichage en groupes distincts avec accordéon réductible (`localStorage`) pour les éléments système.
+7. **Cycle de vie et multi-états des conteneurs applicatifs / Serveurs de jeu :**
+   - *Erreur passée* : Détection binaire simplifiée (`Running == true -> online`, sinon `offline`), masquant les crashs applicatifs et les phases critiques de boot.
+   - *Règle* :
+     - Différencier l'arrêt volontaire (`ExitCode == 0` -> `stopped`) du crash/erreur (`ExitCode != 0`, `OOMKilled`, ou `dead` -> `error`).
+     - Détecter la phase de démarrage (`starting`) : transition via actions utilisateur (start/restart), probe TCP non bloquant sur le port de jeu, et délai de warm-up de boot.
+     - Adapter les boutons d'actions selon l'état réel (bouton "Voir Crash Log" sur erreur, "Console Boot" pendant le démarrage).
 
 ### C. Gestion des Médias & Authentification
 6. **Streaming média (Lecteurs Audio, Vidéo, Visionneuse) :**
