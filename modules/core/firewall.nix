@@ -28,7 +28,7 @@ in
 
   # =========================================================================
   # 🛡️ CŒUR DU PARE-FEU MODULAIRE STEvE_OS NAS EDITION
-  # Les services (Samba, NFS, Jellyfin, SSH) injectent leurs propres ports
+  # Les services (Samba, NFS, SSH) injectent leurs propres ports
   # de manière dynamique et déclarative.
   # Les ports personnalisés définis via le Dashboard Web (firewall-rules.json)
   # sont automatiquement injectés ici.

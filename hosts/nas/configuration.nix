@@ -98,10 +98,6 @@
         port = vars.services.sftp.port or 22;
         chrootPath = vars.services.sftp.chrootPath or "/mnt/storage/sftp";
       };
-      jellyfin = {
-        enable = vars.services.jellyfin.enable or true;
-        openFirewall = vars.services.jellyfin.openFirewall or true;
-      };
       docker = {
         enable = vars.services.docker.enable or true;
         enableNvidia = vars.services.docker.enableNvidia or false;

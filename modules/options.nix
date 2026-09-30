@@ -139,10 +139,6 @@ with lib;
         port = mkOption { type = types.int; default = 22; };
         chrootPath = mkOption { type = types.str; default = "/mnt/storage/sftp"; };
       };
-      jellyfin = {
-        enable = mkOption { type = types.bool; default = true; };
-        openFirewall = mkOption { type = types.bool; default = true; };
-      };
       docker = {
         enable = mkOption { type = types.bool; default = true; };
         enableNvidia = mkOption { type = types.bool; default = false; };

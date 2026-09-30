@@ -124,12 +124,6 @@
       chrootPath = "/mnt/storage/sftp";
     };
 
-    # Serveur Multimédia & Transcodage matériel GPU
-    jellyfin = {
-      enable = true;
-      openFirewall = true;
-    };
-
     # Moteur de conteneurs pour applications NAS
     docker = {
       enable = true;

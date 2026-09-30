@@ -14,7 +14,7 @@ Directement inspiré de l'architecture déclarative de **ChomiamOS**, STEvE_OS N
   - **Nvidia NVENC/NVDEC :** Support officiel avec `nvidia-container-toolkit` pour conteneurs Docker/Podman.
   - Permissions `/dev/dri` injectées automatiquement pour Jellyfin et les conteneurs.
 - **Pare-Feu Modulaire :**
-  - Chaque module de service (Samba, NFS, Jellyfin, SSH, WireGuard) déclare et ouvre ses propres ports uniquement lorsqu'il est activé.
+  - Chaque module de service (Samba, NFS, SSH, WireGuard) déclare et ouvre ses propres ports uniquement lorsqu'il est activé.
   - Surcharges utilisateur préservées dans `firewall-user.nix`.
   - Protection active contre le bruteforce avec **Fail2ban**.
 - **Gestion du Stockage & Disques :**
@@ -47,7 +47,7 @@ steveos-nas/
 │   ├── core/                       # Nix, utilisateurs, sécurité, pare-feu modulaire
 │   ├── hardware/                   # Pilotes GPU, codecs VA-API/QSV, économie d'énergie
 │   ├── storage/                    # SMART, spindown, maintenance disques
-│   └── services/                   # Samba, NFS, sFTP, Jellyfin, Docker, VPN (WireGuard), KVM, nix-ld
+│   └── services/                   # Samba, NFS, sFTP, Docker, VPN (WireGuard), KVM, nix-ld
 │
 └── tools/
     └── steveos-cli/                # 🦀 Outil d'administration natif en Rust

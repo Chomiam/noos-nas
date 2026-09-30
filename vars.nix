@@ -63,9 +63,6 @@
       enable = true;
       port = 22;
     };
-    jellyfin = {
-      enable = true;
-    };
     docker = {
       enable = true;
     };
