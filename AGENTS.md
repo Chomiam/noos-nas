@@ -72,4 +72,18 @@
   3. **Objectif architectural :**
      - Garantir une traçabilité totale entre les signalements et le code, faciliter l'audit de l'historique Git et GitHub Issues, et éviter toute ambiguïté lors de la corrélation croisée entre le dépôt NixOS et le Dashboard.
 
+---
+
+## ⚡ Règle n°7 : Alimentation obligatoire du cache binaire Cachix (steveos) à chaque mise à jour du Dashboard
+- **À chaque nouvelle version, correctif ou mise à jour du Dashboard Web (`steveos-nas-dashboard`) :**
+  1. **Publication distante et build Cachix** :
+     - Pousser systématiquement les commits et tags sur GitHub (`main` et tags) pour que le workflow GitHub Actions compile le binaire du Dashboard et le pousse dans le cache binaire Cachix officiel `steveos` (`https://steveos.cachix.org`).
+     - Vérifier impérativement la bonne complétion du workflow distant (`gh run list --repo Chomiam/steveos-nas-dashboard`) avant de déclarer la mise à jour prête.
+  2. **Propagation du hash dans `steveos-nas`** :
+     - Mettre à jour l'input `steveos-nas-dashboard` dans `flake.lock` (`nix flake lock --update-input steveos-nas-dashboard`).
+     - Valider l'évaluation déclarative (`nix eval .#nixosConfigurations.steveos-nas.config.system.build.toplevel.drvPath`).
+     - Committer et pousser la mise à jour de `flake.lock` sur `origin/main`.
+  3. **Objectif fondamental** :
+     - Garantir que le NAS de l'utilisateur télécharge instantanément le binaire précompilé depuis Cachix au lieu de compiler Rust localement sur son processeur lors du clic de mise à jour sur le Dashboard Web.
+
 
