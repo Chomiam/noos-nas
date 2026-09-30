@@ -163,6 +163,16 @@ in
     btrfs-progs
     xfsprogs
     e2fsprogs
+
+    # Outils d'archivage & compression
+    zip
+    unzip
+    p7zip
+    gnutar
+    gzip
+    bzip2
+    xz
+    zstd
     parted
 
     # Traitement d'images et formats RAW/HEIC (Visualiseur STEvE_OS)
