@@ -54,6 +54,11 @@ Ce guide regroupe les apprentissages essentiels, l'architecture des dépôts, le
 5. **Pré-remplissage des compteurs de sous-onglets :**
    - *Erreur passée* : Ne charger les données d'un sous-onglet (ex: `Générations Système ( -- )`) que lors du clic sur l'onglet, laissant `--` affiché par défaut.
    - *Règle* : Fournir les compteurs légers dès la réponse de synthèse globale du backend (`status.system_generations_count`) ou précharger les requêtes en tâche de fond.
+6. **Mise en page des tableaux denses et badges d'origine :**
+   - *Erreur passée* : Badges sans `white-space: nowrap` qui se coupent verticalement dans les cellules étroites (ex: `🔒 Système` sur une ligne et `[NixOS]` en dessous) et mélange désordonné des démons système et des règles personnalisées de l'utilisateur.
+   - *Règle* :
+     - Toujours verrouiller les badges compacts avec `white-space: nowrap; display: inline-flex; align-items: center; gap: 5px;`.
+     - Dans les tableaux où cohabitent des dizaines d'entrées système immuables et des règles utilisateur, structurer l'affichage en groupes distincts avec accordéon réductible (`localStorage`) pour les éléments système.
 
 ### C. Gestion des Médias & Authentification
 6. **Streaming média (Lecteurs Audio, Vidéo, Visionneuse) :**
