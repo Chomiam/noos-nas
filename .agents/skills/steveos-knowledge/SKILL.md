@@ -108,6 +108,14 @@ Ce guide regroupe les apprentissages essentiels, l'architecture des dépôts, le
       2. Conditionner l'affichage via des classes CSS strictes sur `<body>` : `body.not-authenticated .app-shell { display: none !important; }` et `body.authenticated .app-shell { display: block; }`.
       3. Rendre l'écran de connexion 100% opaque (`background: #11111b;` sans transparence ni dépendance au flou d'arrière-plan).
       4. Lors du `logoutUser()` : masquer instantanément `#app-shell`, révoquer la session sur l'API, purger cookies et stockage, nettoyer les paramètres d'URL (`?token=...`), et exécuter impérativement `window.location.replace("/")` pour purger la mémoire, les intervals et le DOM.
+12. **Anti-pattern `iframe src=""` et roue de chargement permanente de l'onglet :**
+    - *Erreur passée* : Déclarer un `<iframe src="">` ou des `<img src="">` vides dans le DOM initial pour un composant masqué (ex: visualiseur de document PDF ou miniature YouTube).
+    - *Conséquence* : Selon la RFC 3986, un URI relatif vide sur un iframe pointe vers l'URI de base elle-même (`/`). Le navigateur tente donc de charger la page complète en boucle récursive à l'intérieur de l'iframe, ce qui maintient la roue de chargement de l'onglet du navigateur (`loading spinner`) en rotation continue sans jamais s'arrêter.
+    - *Règle* :
+      1. Utiliser impérativement `src="about:blank"` pour tout `<iframe>` non initialisé.
+      2. Fournir un fichier natif `/favicon.ico` à la racine pour éviter que le navigateur ne tourne en boucle sur une erreur 404.
+      3. Toujours déclarer `preload="none"` sur les balises `<video>` et `<audio>` tant qu'aucun média n'est chargé, et ne jamais y placer `autoplay` dans le HTML initial.
+      4. Rendre le chargement des polices web CDN non-bloquant (`media="print" onload="this.media='all'"`) avec repli direct sur les polices système locales.
 
 ---
 
