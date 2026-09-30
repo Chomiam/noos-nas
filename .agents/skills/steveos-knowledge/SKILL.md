@@ -200,6 +200,14 @@ pub fn interpolate_pwm(temp: f32, curve: &[CurvePoint]) -> u8 {
 
 ---
 
+### Transition visuelle & Rechargement fluide post-mise à jour (Dashboard) :
+- Lors de la finalisation d'une mise à jour système (`stage === "completed"` ou 100%), déclencher un overlay plein écran avec floutage d'arrière-plan (`backdrop-filter: blur(20px)` et classe `body.app-updating-reload #app-shell` avec `filter: blur(14px) brightness(0.7)`).
+- Présenter une carte centrée Catppuccin Mocha animée avec icône rayonnante ✨, halo radial et micro-jauge de progression de synchronisation (2.2s).
+- **Persistance du contexte** : Mémoriser l'onglet actif dans `sessionStorage.setItem("steveos_active_tab", activeTab)` avant rechargement pour replacer automatiquement l'utilisateur sur son écran d'origine (qu'il soit resté sur l'onglet Mises à jour ou sur un autre onglet).
+- Recharger la page via `window.location.replace()` avec un paramètre de timestamp pour purger le cache et appliquer immédiatement les nouveaux assets Web (HTML/JS/CSS) et le nouveau binaire.
+
+---
+
 ## 🔄 4. Protocole d'Actualisation Continue de ce Fichier
 
 À chaque fois qu'un bogue est résolu, qu'un écueil est identifié ou qu'une nouvelle architecture est introduite :
