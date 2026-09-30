@@ -42,3 +42,14 @@
   - **Contexte & Objectif** : Pourquoi la modification a été effectuée.
   - **Impact architectural** : Fichiers et modules Nix modifiés.
   - **Vérification** : Preuve d'évaluation valide sans warning de dépréciation.
+
+---
+
+## 🛑 Règle n°5 : Déploiement des mises à jour réservé exclusivement à l'utilisateur depuis le Dashboard
+- **L'agent IA et les scripts de build ne doivent JAMAIS appliquer eux-mêmes les mises à jour directement sur le NAS distant** (interdiction formelle de lancer `nh os switch`, `nixos-rebuild switch` ou `git pull` sur `/etc/nixos` via SSH pour appliquer un changement).
+- **Rôle strict de l'agent :**
+  1. Développer, corriger et valider la syntaxe / l'évaluation sur la machine locale (`nix eval`).
+  2. Mettre à jour `flake.lock` et pousser les commits / tags sur GitHub (`origin/main`).
+  3. Informer l'utilisateur que la mise à jour est disponible et prête sur GitHub.
+- **C'est EXCLUSIVEMENT l'utilisateur qui déclenche et applique la mise à jour sur son NAS en cliquant sur le bouton unique du Dashboard Web STEvE_OS.**
+
