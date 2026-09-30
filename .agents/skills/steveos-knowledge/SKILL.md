@@ -79,6 +79,15 @@ Ce guide regroupe les apprentissages essentiels, l'architecture des dépôts, le
      - Afficher des libellés contextuels séquentiels ("Interrogation GitHub...", "Analyse des paquets...", "Finalisation...").
      - Offrir un état de succès transitoire bien visible (bordure verte, checkmark "✨ Système synchronisé !") avec impulsion lumineuse sur l'horodatage.
 
+10. **Persistance bidirectionnelle de l'état d'interface (Routage URL Hash & LocalStorage) :**
+    - *Erreur passée* : Sauvegarder l'onglet actif uniquement en `sessionStorage` et conserver une URL statique `/`.
+    - *Impact* : Tout rafraîchissement (F5, saisie barre d'adresse, navigation privée) ramenait systématiquement l'utilisateur sur la Vue d'ensemble (`tab-overview`), et la vue d'accueil clignotait brièvement à chaque rechargement avant que l'authentification asynchrone ne s'achève.
+    - *Règle* :
+      - Toujours synchroniser l'onglet et le sous-onglet actif avec `window.location.hash` (`#storage`, `#files`, `#containers/store`, `#network/samba`, etc.) et avec `localStorage`.
+      - Supporter les boutons Précédent/Suivant de l'historique du navigateur via `window.addEventListener("hashchange", ...)`.
+      - Appliquer un pré-rendu anti-flicker dès l'analyse DOM (`DOMContentLoaded` et attribut `data-initial-tab` dans l'en-tête HTML) pour masquer instantanément l'accueil et activer le bon onglet avant même l'appel réseau `/api/auth/me`.
+      - Sauvegarder et restaurer le dossier courant de l'explorateur de fichiers (`steveos_files_path`) dans `localStorage`.
+
 ### C. Gestion des Médias & Authentification
 6. **Streaming média (Lecteurs Audio, Vidéo, Visionneuse) :**
    - *Erreur passée* : Les balises natives `<audio>`, `<video>` et `<img>` n'envoient pas les en-têtes HTTP `Authorization: Bearer ...`.
@@ -197,6 +206,15 @@ pub fn interpolate_pwm(temp: f32, curve: &[CurvePoint]) -> u8 {
 - Privilégier une disposition horizontale pleine largeur (`.hw-row-item` avec pastilles flex-wrap) plutôt qu'une grille de cartes imposantes qui fragmentent la lecture sur la page d'accueil.
 - Décorer chaque ligne d'une bordure gauche thématique aux couleurs Catppuccin Mocha (CPU: mauve, Carte Mère: blue, RAM: yellow, GPU: peach, Réseau: teal, Stockage: sapphire).
 - **Filtrage réseau strict** : Toujours filtrer les interfaces virtuelles bruyantes (`docker0`, `veth*`, `virbr*`, `br-*`, `wg*`, `tun*`, `tap*`) via la détection `/sys/class/net/<iface>/device` côté backend (`is_physical`) et un filtre de repli côté frontend, afin de ne valoriser sur la page d'accueil que les adaptateurs physiques réels (`eno1`, `enp*`, `eth*`) avec leur débit négocié, IPv4 locale et adresse MAC.
+
+---
+
+### Routage par Hash d'URL & Persistance Multi-Vues (Dashboard) :
+- Ne jamais reposer uniquement sur `sessionStorage` pour l'état d'onglets : `sessionStorage` est volatile et se réinitialise lors des saisies d'URL dans la barre d'adresse, l'ouverture de nouvelles fenêtres ou les restrictions d'isolation de contexte.
+- Utiliser un couplage dynamique entre `window.location.hash` (`#storage`, `#files`, `#containers`, `#network/samba`, etc.) et `localStorage.setItem("steveos_active_tab", tabId)`.
+- Écouter l'événement `window.addEventListener("hashchange", ...)` pour garantir la cohérence des boutons Précédent / Suivant du navigateur.
+- **Anti-flicker de la vue d'accueil** : Détecter et appliquer la vue cible dès le `DOMContentLoaded` (et via un attribut de pré-rendu `data-initial-tab` dans l'en-tête HTML) afin d'éviter tout clignotement ou affichage bref de la vue d'accueil (`tab-overview`) pendant l'attente de la vérification de session asynchrone (`/api/auth/me`).
+- Conserver également le chemin actif de l'explorateur de fichiers (`steveos_files_path`) pour maintenir l'utilisateur dans son dossier courant après rafraîchissement.
 
 ---
 
