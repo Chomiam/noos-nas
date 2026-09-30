@@ -100,6 +100,14 @@ Ce guide regroupe les apprentissages essentiels, l'architecture des dépôts, le
       1. Toujours propager `user = vars.user.username` depuis `hosts/nas/configuration.nix` vers les services applicatifs.
       2. Dans le backend, vérifier l'existence de `STEVEOS_USER` dans `/etc/passwd` et prévoir un repli automatique vers le premier compte humain (UID >= 1000) et son véritable répertoire personnel.
       3. Dans `modules/core/users.nix`, inclure un script d'activation de protection scannant `/home/*` pour restaurer immédiatement tout compte orphelin préexistant dans `/etc/passwd`.
+11. **Isolation stricte de la page de connexion & Déconnexion atomique (Dashboard) :**
+    - *Erreur passée* : Déclarer l'écran de connexion sous forme d'un simple overlay semi-transparent (`backdrop-filter: blur(...)`) au-dessus de la structure complète du dashboard (`<header>`, `<nav>`, `<main>`), tout en masquant le modal par défaut (`style="display:none;"`). Lors de la déconnexion (`logoutUser`), ne faire que supprimer les jetons et réafficher le modal sans vider le DOM, sans couper le polling et sans recharger la page.
+    - *Conséquences* : Le dashboard complet, ses graphiques, ses disques et son arborescence restent visibles et chargés en arrière-plan sous le modal de connexion. L'utilisateur a l'impression que la déconnexion n'a pas eu lieu tant qu'il n'actualise pas manuellement la page (`F5`).
+    - *Règle* :
+      1. Encapsuler impérativement toute l'interface active du NAS dans un conteneur `#app-shell`.
+      2. Conditionner l'affichage via des classes CSS strictes sur `<body>` : `body.not-authenticated .app-shell { display: none !important; }` et `body.authenticated .app-shell { display: block; }`.
+      3. Rendre l'écran de connexion 100% opaque (`background: #11111b;` sans transparence ni dépendance au flou d'arrière-plan).
+      4. Lors du `logoutUser()` : masquer instantanément `#app-shell`, révoquer la session sur l'API, purger cookies et stockage, nettoyer les paramètres d'URL (`?token=...`), et exécuter impérativement `window.location.replace("/")` pour purger la mémoire, les intervals et le DOM.
 
 ---
 
