@@ -71,6 +71,13 @@ Ce guide regroupe les apprentissages essentiels, l'architecture des dépôts, le
      - Hydrater immédiatement l'UI (0ms) depuis `localStorage` au chargement de l'onglet ou de la page.
      - Déclencher la requête API en arrière-plan et rafraîchir le DOM de manière transparente à l'arrivée des données fraîches.
      - Côté Backend Rust : grouper les inspections Docker en une seule commande batch (`docker inspect c1 c2 ...`), court-circuiter dès le début si la liste est vide, et mettre en cache mémoire (TTL) les catalogues ou fichiers statiques souvent relus sur disque.
+9. **Feedback visuel & progression des actions asynchrones (Boutons d'inspection / mise à jour) :**
+   - *Erreur passée* : Boutons d'action réseau (ex: "Vérifier maintenant") plats et statiques qui se contentent d'un texte figé "Recherche...", ne donnant aucun sentiment de travail actif ni de progression.
+   - *Règle* :
+     - Intégrer un balayage lumineux shimmer et une icône rotative fluide (`@keyframes spinIconSmooth`).
+     - Intégrer une jauge de progression micro-fine sur la bordure du bouton (incréments d'étapes : 30% -> 65% -> 85% -> 100%).
+     - Afficher des libellés contextuels séquentiels ("Interrogation GitHub...", "Analyse des paquets...", "Finalisation...").
+     - Offrir un état de succès transitoire bien visible (bordure verte, checkmark "✨ Système synchronisé !") avec impulsion lumineuse sur l'horodatage.
 
 ### C. Gestion des Médias & Authentification
 6. **Streaming média (Lecteurs Audio, Vidéo, Visionneuse) :**
