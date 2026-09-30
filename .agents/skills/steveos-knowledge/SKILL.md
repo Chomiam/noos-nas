@@ -119,6 +119,18 @@ Ce guide regroupe les apprentissages essentiels, l'architecture des dépôts, le
 
 ---
 
+### E. Surveillance Matérielle, Ventilation & Sécurité Thermique
+13. **Zéro composant matériel en dur (CPU / Carte Mère / GPU) :**
+    - *Erreur passée* : Définir des valeurs de secours fixes (Dual Xeon E5-2650 v4, Huananzhi X99, Intel Arc A380) dans le backend Rust ou l'UI.
+    - *Impact* : Tout utilisateur installant STEvE_OS sur une machine AMD Ryzen ou Intel Core voyait une fausse carte mère et un faux GPU affichés.
+    - *Règle* : Détecter dynamiquement les composants via Linux sysfs (`/sys/class/dmi/id/`, `/sys/bus/pci/devices/*`, `/proc/cpuinfo`, `/sys/class/drm/`).
+14. **Protection Failsafe Thermique Inviolable (80°C = 100% PWM) :**
+    - *Règle fondamentale* : Dans tout démon d'asservissement des ventilateurs, forcer inconditionnellement la vitesse à 100% (255/255) si n'importe quelle sonde franchit 80°C, afin d'écarter tout risque de destruction matérielle par mauvaise courbe utilisateur.
+15. **Persistance des Contrôleurs `hwmon` entre Redémarrages :**
+    - *Règle* : Les index `/sys/class/hwmon/hwmonX` changent selon l'ordre d'initialisation des pilotes par le noyau Linux. Toujours associer les ventilateurs et sondes par `chip_name` (ex: `nct6775`, `k10temp`, `coretemp`) et index de canal (`fan1`, `temp1`) plutôt que par le numéro volatil de hwmon.
+
+---
+
 ## 🛠️ 3. Patterns Recommandés & Recettes Éprouvées
 
 ### Comptage ultra-rapide des générations NixOS (0ms) :
@@ -145,6 +157,29 @@ pub fn get_system_generations_count() -> u32 {
     : ``;
   ```
 - Toujours prévoir un fallback sécurisé vers l'emoji natif si l'image distante échoue à charger (`onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';"`).
+
+---
+
+### Régulation Thermique Linéaire par Morceaux (Courbes Ventilateurs) :
+Pour convertir une température mesurée en consigne PWM fluide à partir d'une liste ordonnée de points d'inflexion `(temp_c, pwm_percent)` :
+```rust
+pub fn interpolate_pwm(temp: f32, curve: &[CurvePoint]) -> u8 {
+    if temp >= 80.0 { return 100; } // Sécurité Failsafe inconditionnelle
+    if curve.is_empty() { return 50; }
+    if temp <= curve.first().unwrap().temp_c { return curve.first().unwrap().pwm_percent; }
+    if temp >= curve.last().unwrap().temp_c { return curve.last().unwrap().pwm_percent; }
+
+    for window in curve.windows(2) {
+        let (p1, p2) = (&window[0], &window[1]);
+        if temp >= p1.temp_c && temp <= p2.temp_c {
+            let ratio = (temp - p1.temp_c) / (p2.temp_c - p1.temp_c).max(0.1);
+            let pwm = p1.pwm_percent as f32 + ratio * (p2.pwm_percent as f32 - p1.pwm_percent as f32);
+            return pwm.round().clamp(0.0, 100.0) as u8;
+        }
+    }
+    100
+}
+```
 
 ---
 
