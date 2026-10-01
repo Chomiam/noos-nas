@@ -611,6 +611,27 @@ fn resolve_and_activate_block_device(clean_dev: &str, req: &MountRequest) -> Res
 
 ---
 
+### Assistant de Création RAID Pro & Visualisation Graphique des Baies :
+- **Affichage des Disques en Lignes (Row-Style) vs Grilles** :
+  - Bannir les grilles étriquées pour la sélection des périphériques de stockage : chaque disque doit disposer de sa propre carte horizontale (`.raid-disk-row-card`) avec toggle complet au clic, bus matériel (`SATA 6Gb/s`, `NVMe PCIe`), modèle constructeur, capacité exacte et état de disponibilité.
+- **Rendu Visuel Dynamique des Baies et Blocs de Parité** :
+  - Représentation sous forme de rack de serveur NAS (`.raid-disk-rack-visual`) : chaque disque physique sélectionné simule un tiroir caddy avec LED d'état et un empilement vertical de 4 blocs logiques.
+  - Découpage visuel précis selon le niveau de RAID :
+    - *RAID 0* : 100% Blocs de données (`Data A1..A4`), 0% parité.
+    - *RAID 1* : Disque 1 en Données, Disques 2..N en Miroir exact (`Mirror M1..M4`).
+    - *RAID 5* : Blocs distribués en diagonale/damier (3x Données + 1x Parité `P1..P4` alternée par disque).
+    - *RAID 6* : Double parité distribuée (`Data`, `Parité P`, `Parité Q`).
+    - *RAID 10* : Paires en miroir agrégées (`Pair 1: D1+M1`, `Pair 2: D2+M2`).
+    - *JBOD/Linéaire* : Blocs continus sans striping.
+  - **Emplacements Fantômes (Ghost Slots)** : Si le nombre de disques cochés est inférieur au minimum requis par l'algorithme (ex: 2 disques pour RAID 5 qui en demande 3), afficher des baies fantômes en pointillés animés (`+ Disque Requis`) pour guider visuellement l'utilisateur.
+- **Sélecteur Comparatif de Systèmes de Fichiers (Btrfs, XFS, Ext4)** :
+  - Présentation sous forme de cartes interactives (`.fs-type-card`) détaillant les points forts et contraintes de chaque moteur :
+    - *Btrfs* : Recommandé STEvE_OS (Snapshots instantanés CoW, auto-guérison bitrot, compression zstd) / Plus exigeant en RAM.
+    - *XFS* : Recommandé pour gros débits et fichiers volumineux (multimédia 4K, ISO, scalabilité multithreadée) / Pas de shrink possible.
+    - *Ext4* : Standard historique Linux (légèreté absolue, fiabilité universelle, fsck rapide) / Pas de CoW ni de snapshots natifs.
+
+---
+
 ## 🔄 4. Protocole d'Actualisation Continue de ce Fichier
 
 

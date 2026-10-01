@@ -31,6 +31,7 @@
     ntfs3g       # Support NTFS (disques Windows)
     e2fsprogs    # Support ext4/ext3
     btrfs-progs  # Support Btrfs
+    xfsprogs     # Support XFS (mkfs.xfs)
     udisks2      # Outil udisksctl
   ];
 }
