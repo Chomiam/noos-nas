@@ -277,6 +277,15 @@ Ce guide regroupe les apprentissages essentiels, l'architecture des dépôts, le
       3. **Substitution intelligente dans les Compose multi-ports** : Ne jamais écraser un port DNS (53) ou auxiliaire lors de la personnalisation du port Web d'une application de boutique.
       4. **Ne jamais exposer le port client DHCP 68** : Les conteneurs DNS/DHCP n'ont besoin que du port serveur 67/udp si le DHCP est activé, jamais du port client 68 qui est réservé à l'OS hôte.
 
+25. **Formatage de Volume RAID : Élimination des Verrous d'Interface Silencieux (Bouton disabled sans retour) et Conflits de Signatures Superblocs (wipefs -a et -t <fstype>) :**
+    - *Erreurs passées* :
+      1. **Verrouillage UI passif par attribut `disabled`** : Dans la modale de formatage (`mount-volume-modal`), le bouton de soumission « Formater et monter » était purement et simplement désactivé par l'attribut HTML `disabled = true` tant que la case de confirmation obligatoire n'était pas cochée. Lorsqu'un utilisateur clique sur un `<button disabled>`, le navigateur n'émet aucun événement `click` et l'interface reste muette (« il ne se passe absolument rien »). L'utilisateur croit alors à un bogue de clic ou à un freeze de l'interface.
+      2. **Conflit de signatures superbloc résiduelles lors du montage** : Lorsqu'un volume ou des disques physiques ont été précédemment formatés sous un autre système de fichiers (ex: XFS), `mkfs.btrfs` initialise le système Btrfs mais des métadonnées résiduelles peuvent subsister. Si la commande `mount` est appelée sans le drapeau explicite `-t <fstype>`, `libmount` peut sonder et détecter l'ancienne signature (ex: XFS) et tenter d'appliquer des options incompatibles (`compress=zstd`), provoquant l'erreur système critique : `mount: /mnt/storage: échec de fsconfig() :xfs: Unknown parameter 'compress'`.
+    - *Règles & Patterns éprouvés* :
+      1. **Interactivité & Guidage UI au Clic** : Ne jamais laisser un bouton d'action principal silencieusement bloqué par `disabled`. Le bouton doit demeurer cliquable : si la case de confirmation obligatoire n'est pas cochée au moment du clic, afficher un toast explicatif (`showToast`), déclencher une animation de secousse visuelle (`shake-alert`), faire défiler la vue (`scrollIntoView`) jusqu'à la case et placer le focus dessus.
+      2. **Purge Préventive des Signatures avec `wipefs -a`** : Avant tout formatage forcé d'un volume logique ou périphérique bloc (`mkfs.btrfs`, `mkfs.ext4`, etc.), exécuter systématiquement `wipefs -a &final_block_device` suivi de `udevadm settle --timeout=2` pour détruire toute signature ou superbloc antérieur susceptible de tromper `blkid` ou `libmount`.
+      3. **Spécification Explicite du Type de Système de Fichiers (`-t <detected_fs>`)** : Toujours passer l'argument explicite `-t <fs_type>` (ex: `-t btrfs`) à la commande `mount` au lieu de laisser le noyau ou la libc deviner le pilote.
+
 ---
 
 
