@@ -119,6 +119,10 @@ Ce guide regroupe les apprentissages essentiels, l'architecture des dépôts, le
       1. Tous les conteneurs de sous-onglets (`.network-subpane`, `.containers-subpane`) doivent impérativement être des enfants directs de premier niveau du panneau d'onglet parent (`.tab-pane`).
       2. Toujours valider l'arbre DOM et les ancêtres des nouveaux conteneurs avec un parser DOM automatisé pour garantir l'absence d'imbrication involontaire.
 
+15. **Ergonomie des modales de volume & Logique de montage des grappes RAID :**
+    - *Règle métier* : Ne jamais proposer le bouton d'action directe "Monter sans formater" sur une grappe RAID ou une partition brute n'ayant aucun système de fichiers valide détecté (`r.filesystem` manquant, vide ou 'non formaté'). L'interface doit guider clairement l'utilisateur vers le formatage initial via un badge d'avertissement.
+    - *Règle d'interface* : Privilégier une disposition panoramique horizontale (largeur 900-950px, grille 2 colonnes équilibrées) pour les formulaires riches de gestion de stockage. Les drapeaux de montage (flags `nofail`, `noatime`, `defaults`, `compress=zstd`) doivent être disposés sur des lignes distinctes (`.mount-flag-row`) avec description inline, badge de criticité et switch toggle, plutôt que comprimés dans des colonnes étroites nécessitant un défilement vertical excessif.
+
 ### C. Gestion des Médias & Authentification
 6. **Streaming média (Lecteurs Audio, Vidéo, Visionneuse) :**
    - *Erreur passée* : Les balises natives `<audio>`, `<video>` et `<img>` n'envoient pas les en-têtes HTTP `Authorization: Bearer ...`.
