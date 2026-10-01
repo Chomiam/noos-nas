@@ -88,6 +88,13 @@ Ce guide regroupe les apprentissages essentiels, l'architecture des dépôts, le
       - Appliquer un pré-rendu anti-flicker dès l'analyse DOM (`DOMContentLoaded` et attribut `data-initial-tab` dans l'en-tête HTML) pour masquer instantanément l'accueil et activer le bon onglet avant même l'appel réseau `/api/auth/me`.
       - Sauvegarder et restaurer le dossier courant de l'explorateur de fichiers (`steveos_files_path`) dans `localStorage`.
 
+11. **Superposition et plan d'affichage des notifications Toast (`z-index` & `pointer-events`) :**
+    - *Erreur passée* : Définir `#toast-container` avec `z-index: 999` tandis que les fenêtres modales et backdrops ont un `z-index: 2000`.
+    - *Impact* : Lorsqu'une action déclenchait une alerte ou un toast depuis une fenêtre modale (ex: confirmation d'ouverture d'un port pare-feu en 1 clic ou notification de déploiement), le toast apparaissait masqué derrière l'overlay sombre de la modale.
+    - *Règle* :
+      - Élever impérativement `#toast-container` et tous les toasts flottants au premier plan absolu (`z-index: 100050 !important;`).
+      - Définir `pointer-events: none;` sur `#toast-container` et `pointer-events: auto;` sur les cartes `.toast` individuelles afin d'éviter qu'une zone invisible vide ne bloque les clics sur l'interface sous-jacente.
+
 ### C. Gestion des Médias & Authentification
 6. **Streaming média (Lecteurs Audio, Vidéo, Visionneuse) :**
    - *Erreur passée* : Les balises natives `<audio>`, `<video>` et `<img>` n'envoient pas les en-têtes HTTP `Authorization: Bearer ...`.
@@ -251,6 +258,20 @@ pub fn interpolate_pwm(temp: f32, curve: &[CurvePoint]) -> u8 {
 - **Fluidité de rendu du Store (Slicing 48 applications)** :
   - Ne jamais insérer plus de 50 à 100 cartes complexes simultanément dans le DOM.
   - Appliquer un découpage par tranches de 48 items avec un bouton dynamique "Afficher plus d'applications (+48)", tout en appliquant les recherches, tris et filtres par catégories sur l'intégralité du catalogue (640+ applications) en mémoire.
+
+---
+
+### Toast Flottant de Déploiement Docker en Arrière-Plan (Dashboard) :
+- Ne jamais laisser l'utilisateur bloqué dans une modale figée pendant la création de volumes, le pulling d'images et le démarrage d'une stack Compose.
+- **Cycle de vie du toast flottant** :
+  1. Dès le clic sur "Déployer", fermer immédiatement la modale de configuration et faire glisser un toast élégant en bas à droite (`.docker-deploy-floating-toast`, `z-index: 100050`).
+  2. Animer une micro-jauge de progression séquentielle (20% -> 45% -> 75% -> 100%) synchronisée avec les étapes d'orchestration (volumes, variables d'environnement, compose up, vérification de l'état).
+  3. À la complétion réussie (code HTTP 200) :
+     - Passer la pastille en vert (`status-success`) avec indicateur lumineux `✓ Déploiement terminé`.
+     - Générer un bouton d'accès direct `🚀 Ouvrir l'application` pointant directement vers l'URL locale `http://<ip>:<port>`.
+     - Ajouter un bouton d'action secondaire `📦 Voir les conteneurs` pour naviguer vers l'onglet conteneurs.
+     - Programmer une fermeture automatique après 12 secondes avec repli manuel par bouton croix `✕`.
+  4. En cas d'échec : passer la jauge en rouge (`status-error`), afficher le message d'erreur retourné par le daemon Docker et maintenir le toast ouvert pour consultation.
 
 ---
 
