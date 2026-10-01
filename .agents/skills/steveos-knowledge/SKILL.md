@@ -192,6 +192,14 @@ Ce guide regroupe les apprentissages essentiels, l'architecture des dépôts, le
       3. Séparer le diagnostic en un résumé humain court et une zone de terminal monospace rétro-éclairée (`<pre><code>`) pour les logs techniques détaillés.
       4. Intégrer un bouton de copie rapide en 1 clic (`📋 Copier le diagnostic`) et une croix de fermeture manuelle.
 
+19. **Déploiement Docker, Conflit d'écoute sur le port 53 (DNS) & Modale d'Erreur Centrée :**
+    - *Erreur passée* : Déverser l'intégralité du log stdout/stderr d'une erreur de déploiement Docker (souvent 50 lignes de couches d'images et d'erreurs OCI) dans le petit toast flottant en bas à droite de l'écran, tout en bloquant sur un conflit de port 53 (`failed to bind host port 0.0.0.0:53/tcp: address already in use`).
+    - *Impact* : Le panneau latéral droit était submergé par un bloc rouge étriqué impossible à lire ou à copier confortablement, et l'utilisateur ne comprenait pas pourquoi un conteneur DNS échouait alors qu'il n'avait rien configuré d'autre manuellement.
+    - *Règle* :
+      1. Les erreurs de déploiement Docker Compose volumineuses doivent ouvrir automatiquement une modale centrée haute priorité (`#modal-docker-deploy-error` avec `z-index: 100070 !important`), dotée d'une zone de texte `<textarea>` monospace plein format, d'un bouton de copie en 1 clic et d'un bandeau d'analyse contextuelle.
+      2. Le toast flottant en bas à droite ne doit afficher qu'un résumé concis d'une seule ligne et un bouton `🔍 Voir le rapport d'erreur` pour rouvrir la modale.
+      3. Pour le port 53 (AdGuard Home, Pi-hole) : sous Linux, Docker tente de lier `0.0.0.0:53`, ce qui échoue si `systemd-resolved` écoute sur `127.0.0.53:53` ou si `dnsmasq` écoute sur `192.168.122.1:53`. La solution pérenne sous NixOS est de désactiver le stub listener local (`services.resolved.extraConfig = "DNSStubListener=no\n";`) tout en maintenant des résolveurs amonts dans `networking.nameservers` afin que le NAS conserve son accès Internet en toutes circonstances.
+
 ---
 
 ## 🛠️ 3. Patterns Recommandés & Recettes Éprouvées
