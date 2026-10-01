@@ -102,6 +102,15 @@ Ce guide regroupe les apprentissages essentiels, l'architecture des dépôts, le
      - Supporter l'authentification par paramètre d'URL `?token=...` et la synchronisation de cookie de session `steveos_token`.
      - Désactiver le `Cache-Control: no-store` pour les flux multimédias avec en-têtes `Accept-Ranges: bytes` afin de permettre le scrubbing (sauts de lecture dans la vidéo/audio).
 
+12. **Lecteurs Média Flottants (Picture-in-Picture) et Fenêtres Déplaçables :**
+    - *Erreur passée* : Appliquer `!important` sur les propriétés CSS `top`, `left`, `right`, `bottom` de la modale en mode vignette (`.mini-player-mode .file-modal-window`), et définir une transition sur `all`.
+    - *Impact* : Les styles inline calculés dynamiquement en JavaScript lors du glisser-déposer (`win.style.left = ...`) étaient purement ignorés par le moteur CSS en raison du `!important` de la feuille de style. Le lecteur semblait figé et impossible à déplacer. De plus, `transition: all` entraînait une latence et des saccades lors du suivi du curseur.
+    - *Règle* :
+      1. Déclarer la position par défaut dans le CSS *sans* `!important` (`top: 122px; right: 24px; left: auto; bottom: auto;`) et injecter les coordonnées en JS avec `win.style.setProperty("left", ..., "important")` et `win.style.setProperty("right", "auto", "important")` lors du drag.
+      2. Restreindre la transition CSS aux effets de halo et bordure (`transition: box-shadow 0.25s ease, border-color 0.25s ease !important;`) sans animer les positions `top`/`left`.
+      3. Aligner par défaut la position verticale sur le conteneur principal adjacent (`top: 122px` pour coïncider avec `.files-main-pane`) pour une esthétique rigoureuse.
+      4. Gérer simultanément les événements souris (`mousedown`, `mousemove`, `mouseup`) et tactiles (`touchstart`, `touchmove`, `touchend`) avec `document.body.style.userSelect = "none"` pendant la translation.
+
 ### D. Déploiement & Sécurité NixOS
 7. **Pas de compilation lourde locale (Règle n°1 d'AGENTS.md) :**
    - La machine de dev et le NAS ne doivent jamais compiler Rust en local. Toujours attendre la fin du build Cachix sur GitHub Actions avant de bumper `flake.lock`.
