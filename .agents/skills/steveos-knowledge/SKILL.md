@@ -315,6 +315,14 @@ Ce guide regroupe les apprentissages essentiels, l'architecture des dépôts, le
 
 
 
+28. **Montage Réseau Distant (sshfs / CIFS), Découverte LAN et Points de Montage Épinglés :**
+    - *Pièges & Bonnes pratiques explorateur de fichiers* :
+      1. **FUSE et user_allow_other** : Pour que les montages FUSE (sshfs) soient accessibles par les utilisateurs non-root et le service web STEvE_OS, toujours activer déclarativement `programs.fuse.userAllowOther = true;` dans NixOS et passer l option `-o allow_other,idmap=user`.
+      2. **Sécurité des Mots de Passe en CLI** : Ne jamais passer de mots de passe en clair dans les arguments de ligne de commande sshfs (visibles dans `/proc` via `ps`). Toujours privilégier `password_stdin` via flux stdin sécurisé ou les clés SSH privées.
+      3. **Découverte Passive et Non-Bloquante** : La détection des partages LAN doit combiner la table ARP du noyau (`/proc/net/arp`), mDNS/Avahi et des sondes TCP asynchrones sur ports 445 (SMB) et 22 (sFTP) avec des timeouts très courts (<= 250ms) pour ne jamais bloquer l interface.
+      4. **VFS Transparente pour l Explorateur** : En montant les partages sous `/mnt/remote/<proto>/<id>`, l explorateur de fichiers réutilise 100% de ses fonctionnalités natives (streaming, renommage, compression, upload/download, miniatures) sans avoir besoin d écrire un client sFTP/SMB virtuel.
+
+
 ---
 
 

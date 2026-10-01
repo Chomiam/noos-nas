@@ -22,7 +22,10 @@
   services.udisks2.enable = true;
   services.devmon.enable = true;
 
-  # Utilitaires de partitionnement et gestion des systèmes de fichiers
+  # Support FUSE pour les montages distants (sshfs)
+  programs.fuse.userAllowOther = true;
+
+  # Utilitaires de partitionnement, gestion des systèmes de fichiers et montages réseau distants
   environment.systemPackages = with pkgs; [
     parted       # Partitionnement GPT/MBR
     eject        # Éjection physique et logicielle (CD/DVD, USB)
@@ -33,5 +36,16 @@
     btrfs-progs  # Support Btrfs
     xfsprogs     # Support XFS (mkfs.xfs)
     udisks2      # Outil udisksctl
+    sshfs        # Montage de serveurs sFTP distants (FUSE)
+    cifs-utils   # Montage de partages SMB/CIFS distants
+  ];
+
+  # Répertoires et persistance pour montages distants et disques épinglés
+  systemd.tmpfiles.rules = [
+    "d /mnt/remote 0755 root root -"
+    "d /mnt/remote/sftp 0755 root root -"
+    "d /mnt/remote/smb 0755 root root -"
+    "f /var/lib/steveos/pinned_mounts.json 0644 root root -"
+    "f /var/lib/steveos/remote_mounts.json 0644 root root -"
   ];
 }
