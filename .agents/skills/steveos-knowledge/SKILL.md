@@ -305,6 +305,30 @@ pub fn interpolate_pwm(temp: f32, curve: &[CurvePoint]) -> u8 {
 
 ---
 
+### Montage Durable Déclaratif `/mnt` (`mounts.json` + `mounts.nix`) & Gestion des Flags :
+- **Architecture de double effet (Runtime immédiat & Déclaratif NixOS)** :
+  - Pour concilier accès immédiat sans redémarrage et persistance durable après reboot, le Dashboard applique :
+    1. Montage direct via `mount -o <runtime_flags> <device> <target>` avec attribution automatique des droits `chown -R <user>:storage <target>` et `chmod 2775 <target>` (setgid).
+    2. Écriture atomique dans `mounts.json` synchronisée sur `/var/lib/steveos/mounts.json`, le répertoire de config (`$STEVEOS_CONFIG_DIR/mounts.json`) et le clone de développement.
+    3. Lecture déclarative native par le module NixOS `modules/storage/mounts.nix` (`builtins.fromJSON (builtins.readFile ../../mounts.json)`) qui génère dynamiquement `fileSystems."<mountPoint>"` et les règles `systemd.tmpfiles.rules`.
+- **Piège critique des Flags de montage (`nofail` vs Kernel runtime)** :
+  - *Piège* : Passer aveuglément l'option `nofail` dans la commande runtime `mount -o defaults,noatime,nofail /dev/... /mnt/...` peut provoquer une erreur `mount: wrong fs type, bad option, bad superblock` selon le système de fichiers ou la version du noyau, car `nofail` est un drapeau géré exclusivement par `/etc/fstab` et `systemd`.
+  - *Règle* : Toujours assainir les options envoyées à la commande `mount` runtime en filtrant les options spécifiques à fstab/systemd (`nofail`, `x-systemd.*`, `auto`, `noauto`), tout en conservant `nofail` dans `mounts.json` pour NixOS.
+  - **Importance vitale de `nofail` sur un NAS** : Évite absolument tout basculement bloquant du NAS en mode rescue emergency au démarrage si un disque externe USB, un disque de données secondaire ou une baie est débranché ou temporairement indisponible.
+  - **Drapeau `noatime`** : Recommandé par défaut sur tous les montages NAS pour éliminer les écritures inutiles d'horodatage de lecture, réduisant drastiquement l'usure mécanique/flash et augmentant les débits.
+  - **Drapeau `compress=zstd`** : Activé automatiquement pour les volumes Btrfs pour économiser 20% à 35% d'espace disque.
+
+---
+
+### Refonte Ergonomique de l'Onglet Stockage (Dashboard) :
+- **Affichage en Lignes pleine largeur (`.storage-disk-row`)** :
+  - Remplacer les cartes verticales volumineuses par des lignes épurées et lisibles contenant l'identifiant physique (`Slot M.2 NVMe`, `Baie 1 (SATA)`), le modèle, le numéro de série, la capacité, la télémétrie S.M.A.R.T. et thermique, ainsi que l'état d'alimentation.
+- **Cadre dédié pour les Grappes RAID (`.raid-cluster-frame`)** :
+  - Encadrer visuellement chaque grappe RAID avec une bordure Catppuccin Mocha douce et une section dédiée aux **disques physiques membres de la grappe** (`.raid-members-section`), reliés par des connecteurs d'arbres hiérarchiques (`├──`, `└──`).
+  - Séparer nettement les disques autonomes (non membres de grappes RAID) pour une lisibilité immédiate de l'infrastructure physique et logique.
+
+---
+
 ## 🔄 4. Protocole d'Actualisation Continue de ce Fichier
 
 À chaque fois qu'un bogue est résolu, qu'un écueil est identifié ou qu'une nouvelle architecture est introduite :
