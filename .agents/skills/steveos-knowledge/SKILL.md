@@ -632,6 +632,30 @@ fn resolve_and_activate_block_device(clean_dev: &str, req: &MountRequest) -> Res
 
 ---
 
+### Studio de Création RAID Widescreen (1360px) & Matrice Stylisée des Niveaux de Redondance :
+- **Architecture de Disposition 2 Colonnes (Split Studio)** :
+  - *Problème des modales étroites 1 colonne (900px)* : Empiler séquentiellement les formulaires, le choix du niveau RAID, la liste des disques, le schéma graphique et les systèmes de fichiers force l'utilisateur à un défilement vertical fastidieux, reléguant le schéma visuel sous la ligne de flottaison.
+  - *Solution Widescreen (1360px)* :
+    - `.raid-creator-pro-window` avec largeur panoramique (`1360px !important`, `height: 88vh`, `max-height: 90vh`).
+    - Grille CSS 2 colonnes (`.raid-studio-grid` : `1.15fr 0.95fr`) :
+      - **Colonne gauche** (`.raid-studio-col-left`) : Paramètres d'accès (nom, point de montage), matrice stylisée des niveaux de RAID, sélection des disques physiques en lignes compactes et sélecteur de système de fichiers (Btrfs, XFS, Ext4).
+      - **Colonne droite (Cockpit visuel temps réel)** (`.raid-studio-col-right`) : Carte sticky contenant le schéma dynamique de la baie (`.raid-disk-rack-visual`), la jauge capacitaire bicolore (Données utiles vs Parité), les métriques modulaires (Nette, Parité, Brute) et la fiche de synthèse technique instantanée.
+    - Avantage UX : Toute modification à gauche (clic sur un niveau RAID, coche d'un disque, saisie de nom) actualise instantanément le cockpit de droite sous les yeux de l'utilisateur sans aucun scroll.
+- **Matrice Stylisée des Niveaux de RAID (Élimination des blocs ternes)** :
+  - Abandonner les cartes grises monolithiques encombrées de longs paragraphes.
+  - Structurer chaque profil en micro-carte interactive (`.raid-level-card`) dans une grille 3x2 :
+    - Accents colorés néon Catppuccin Mocha spécifiques :
+      - *RAID 5* : Vert Émeraude (`--green`), badge `N - 1`, mention `🛡️ 1 panne tolérée`.
+      - *RAID 1* : Bleu Saphir (`--blue`), badge `50%`, mention `🛡️ Tolère 1 sur 2`.
+      - *RAID 6* : Pêche Ambré (`--peach`), badge `N - 2`, mention `🛡️🛡️ 2 pannes simultanées`.
+      - *RAID 10* : Mauve Néon (`--mauve`), badge `50%`, mention `⚡ 1 panne par paire`.
+      - *RAID 0* : Rouge Cramoisi (`--red`), badge `100%`, mention `⚠️ 0 tolérance aux pannes`.
+      - *JBOD* : Titane / Subtext (`--subtext0`), badge `100%`, mention `📦 Pas de striping`.
+    - Indicateur radio personnalisé à point lumineux radial (`.raid-radio-glow`) qui s'allume au clic dans la couleur signature du profil avec halo lumineux et bordure active.
+    - Synchronisation automatique avec la jauge, la baie des disques et les messages d'aide contextuelle.
+
+---
+
 ## 🔄 4. Protocole d'Actualisation Continue de ce Fichier
 
 
