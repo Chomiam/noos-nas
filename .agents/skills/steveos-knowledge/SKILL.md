@@ -232,7 +232,19 @@ Ce guide regroupe les apprentissages essentiels, l'architecture des dépôts, le
       2. **Format standard avec commentaires d'en-tête décoratifs** : Chaque `compose.yaml` doit obligatoirement respecter l'en-tête officiel STEvE_OS avec métadonnées (`Application`, `Port hôte`, `Données hôte`, `Mode`) et bloc de transition NixOS en pied de page.
       3. **Ports & Protocoles stricts** : Spécifier explicitement `/tcp` et `/udp` dès qu'un service écoute sur les deux (notamment port 53). Aligner `default_port` dans `manifest.json` et `store.json` sur le port réel de l'interface Web (ex: 3000 pour AdGuard Home).
 
+21. **Gestion des Conteneurs Applicatifs vs Serveurs de Jeux & Suppression avec confirmation :**
+    - *Erreurs passées* :
+      1. Affichage en grille désordonné : une grille de cartes volumineuses rendait la lecture difficile dès qu'un conteneur avait un nom ou une image un peu longue, masquait les boutons d'actions et manquait de compacité.
+      2. Pollution de l'onglet Docker Compose par les conteneurs de serveurs de jeux (`steveos-game*`) : ces conteneurs sont déjà gérés avec un cycle de vie complet dans la section Serveurs de Jeux / Eggs. Leur présence dans l'onglet applicatif créait de la confusion.
+      3. Absence d'un bouton de suppression de conteneur : l'utilisateur était obligé d'utiliser la CLI pour supprimer un conteneur arrêté ou défectueux.
+      4. Suppression brutale sans confirmation ni option pour purger l'image : risque d'effacement accidentel ou accumulation d'images orphelines volumineuses sur le disque hôte.
+    - *Règles & Patterns* :
+      1. **Affichage en Lignes (`.docker-container-row`)** : Vue horizontale compacte, bordure latérale d'état (vert/orange), nom tronqué avec tooltip `max-width`, image et ports bien séparés, et boutons d'actions iconiques alignés sur la droite.
+      2. **Filtrage contextuel étanche** : Toujours filtrer `!name.startsWith("steveos-game")` dans `loadDockerContainers()` pour isoler les conteneurs applicatifs de la boutique des conteneurs de jeux.
+      3. **Suppression sécurisée avec modale (#modal-delete-docker)** : Confirmation obligatoire avec rappel de la préservation des volumes sur l'hôte et case à cocher pour purger l'image Docker (`delete_image=true`). Le backend exécute un `docker compose down` si un fichier compose existe ou un `docker stop` + `docker rm` en fallback, suivi de `docker rmi` si demandé.
+
 ---
+
 
 
 
