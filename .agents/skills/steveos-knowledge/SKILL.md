@@ -286,6 +286,26 @@ Ce guide regroupe les apprentissages essentiels, l'architecture des dépôts, le
       2. **Purge Préventive des Signatures avec `wipefs -a`** : Avant tout formatage forcé d'un volume logique ou périphérique bloc (`mkfs.btrfs`, `mkfs.ext4`, etc.), exécuter systématiquement `wipefs -a &final_block_device` suivi de `udevadm settle --timeout=2` pour détruire toute signature ou superbloc antérieur susceptible de tromper `blkid` ou `libmount`.
       3. **Spécification Explicite du Type de Système de Fichiers (`-t <detected_fs>`)** : Toujours passer l'argument explicite `-t <fs_type>` (ex: `-t btrfs`) à la commande `mount` au lieu de laisser le noyau ou la libc deviner le pilote.
 
+26. **Architecture des Partages Réseau Dynamiques Samba & Remplacement de `extraConfig` dans Nixpkgs 24.11+ / 26.05 :**
+    - *Piège Nixpkgs & Erreurs passées* :
+      1. Tenter d'utiliser `services.samba.extraConfig` dans un module NixOS moderne. Dans Nixpkgs 24.11+ et instable (26.05), l'option `extraConfig` a été dépréciée puis définitivement supprimée. Son utilisation lève une erreur fatale d'évaluation (`The option services.samba.extraConfig does not exist`).
+      2. Redémarrer brutalement Samba (`systemctl restart samba-smbd`) lors de chaque création ou modification de partage. Cela coupait les transferts de fichiers en cours et déconnectait les sessions actives des clients Windows, macOS ou Linux.
+    - *Règles & Architecture pérenne STEvE_OS* :
+      1. **Inclusion Déclarative Propre** : Déclarer dans le module NixOS `modules/services/samba.nix` :
+         ```nix
+         services.samba.settings.global."include" = "/var/lib/steveos/samba_shares.conf";
+         ```
+         et assurer la présence persistante des fichiers via `systemd.tmpfiles.rules`.
+      2. **Génération Dynamique & Persistance** : Le backend Rust (`src/samba.rs`) gère les partages déclaratifs au format JSON (`/var/lib/steveos/samba_shares.json`) et compile instantanément la configuration Samba au format smb.conf (`/var/lib/steveos/samba_shares.conf`).
+      3. **Rechargement à Chaud sans Déconnexion (Zero Downtime)** : Toujours recharger Samba via `systemctl reload-or-restart samba-smbd` et `smbcontrol smbd reload-config` pour appliquer les nouveaux partages et permissions sans interrompre les sessions TCP des clients connectés.
+      4. **Extensions VFS Clés** :
+         - Apple macOS Finder & Time Machine : `vfs objects = fruit streams_xattr`, `fruit:time machine = yes`.
+         - Corbeille Réseau Automatique : `vfs objects = recycle`, `recycle:repository = .recycle`, `recycle:keeptree = yes`.
+         - Clichés Instantanés Windows VSS : `vfs objects = shadow_copy2`.
+         - Chiffrement Matériel SMB3 : `smb encrypt = mandatory` ou `desired` (AES-128/256-GCM).
+      5. **Séparation Déclarative des Utilisateurs** : La gestion et la création des utilisateurs/mots de passe relèvent exclusivement du module et de l'onglet `Utilisateurs & Groupes` (`#tab-users`). L'onglet Samba ne doit pas réinventer la création de comptes, mais se concentrer sur l'attribution fine des droits d'accès (`valid_users`, `write_list`, `read_list`).
+
+
 ---
 
 

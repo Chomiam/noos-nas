@@ -22,6 +22,7 @@ in
           "printing" = "bsd";
           "printcap name" = "/dev/null";
           "disable spoolss" = "yes";
+          "include" = "/var/lib/steveos/samba_shares.conf";
         };
         shares = {
           path = cfg.sharesPath;
@@ -33,6 +34,13 @@ in
         };
       };
     };
+
+    # Règles tmpfiles pour initialiser les fichiers de partages dynamiques persistants
+    systemd.tmpfiles.rules = [
+      "d /var/lib/steveos 0755 root root -"
+      "f /var/lib/steveos/samba_shares.conf 0644 root root -"
+      "f /var/lib/steveos/samba_shares.json 0644 root root -"
+    ];
 
     # Découverte automatique sur le réseau local (Windows Explorer / macOS Finder)
     services.samba-wsdd = lib.mkIf cfg.wsdd {
