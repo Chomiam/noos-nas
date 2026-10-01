@@ -1,4 +1,4 @@
-{ ... }:
+{ pkgs, ... }:
 
 {
   imports = [
@@ -6,5 +6,20 @@
     ./smartd.nix
     ./spindown.nix
     ./scrub.nix
+  ];
+
+  # Service de gestion et montage automatique des périphériques amovibles (USB, disques externes, lecteurs optiques)
+  services.udisks2.enable = true;
+
+  # Utilitaires de partitionnement et gestion des systèmes de fichiers
+  environment.systemPackages = with pkgs; [
+    parted       # Partitionnement GPT/MBR
+    eject        # Éjection physique et logicielle (CD/DVD, USB)
+    dosfstools   # Support FAT32/vfat (mkfs.vfat)
+    exfatprogs   # Support exFAT (clés USB modernes)
+    ntfs3g       # Support NTFS (disques Windows)
+    e2fsprogs    # Support ext4/ext3
+    btrfs-progs  # Support Btrfs
+    udisks2      # Outil udisksctl
   ];
 }

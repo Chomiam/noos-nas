@@ -388,6 +388,45 @@ fn resolve_and_activate_block_device(clean_dev: &str, req: &MountRequest) -> Res
 
 ---
 
+### Préservation des Données Existantes & Différenciation Montage vs Formatage :
+- **Risque critique d'écrasement de données importées** :
+  - *Problème* : Lorsqu'un utilisateur branche un volume RAID, un disque ou une partition provenant d'une autre machine (Debian, Synology, TrueNAS, unRAID, etc.), le système de fichiers n'est pas encore monté mais contient déjà toutes ses données. Un comportement automatisé qui tente de formater (`mkfs`) en l'absence de point de montage détruirait instantanément les données existantes.
+  - *Règle architecturale adoptée* :
+    1. **Détection proactive du système de fichiers réel** : Interroger systématiquement `blkid -o value -s TYPE <dev>` et `lsblk -no FSTYPE <dev>` pour afficher le filesystem réel (ex: `BTRFS`, `EXT4`, `XFS`, `NTFS`, `VFAT`) même lorsque le volume est démonté.
+    2. **Séparation étanche dans l'API (`force_format: Option<bool>`)** : Le backend refuse catégoriquement d'exécuter `mkfs` sauf si le drapeau `force_format == Some(true)` est explicitement transmis. Si aucun système de fichiers n'est détecté et que `force_format != true`, le backend interrompt l'opération avec un message pédagogique clair invitant à utiliser l'option de formatage si le disque est neuf.
+    3. **Ergonomie du Dashboard** : Deux boutons distincts sur chaque volume :
+       - `📁 Monter sans formater` : Modalité douce avec bandeau vert "Préservation intégrale des données garantie", sélecteur de système de fichiers masqué et montage immédiat.
+       - `⚠️ Formater le volume` : Modale d'alerte rouge avec avertissement destructif explicite, choix du filesystem (`mkfs.btrfs`, `mkfs.ext4`, `mkfs.xfs`), saisie du label et case à cocher de confirmation obligatoire.
+
+---
+
+### Gestion du Partitionnement Dynamique & Espaces Libres (`sfdisk` + `parted`) :
+- **Détection des Blocs d'Espace Non Alloué** :
+  - Calculer la différence entre `size_bytes` du disque physique et la somme des tailles des partitions allouées. Si le reliquat dépasse 50 Mo, synthétiser dynamiquement une partition virtuelle `is_free_space: true`.
+- **Barre Visuelle Proportionnelle (`.disk-partition-bar`)** :
+  - Segmenter visuellement chaque disque à 100% de sa largeur avec un ratio exact `(part_size / disk_size) * 100%`.
+  - Appliquer des styles Catppuccin distinctifs : bleu pour le système NixOS, vert pour les volumes montés, mauve pour les partitions non montées, et hachures translucides pour l'espace libre non alloué.
+- **Ajout de Partition sans collision de secteurs (`sfdisk --append`)** :
+  - Utiliser `echo ",<size>MiB" | sfdisk --append <disk>` (ou `parted -s -a optimal <disk> mkpart primary ...` en fallback). Cela permet d'allouer automatiquement le premier bloc libre disponible sans devoir calculer manuellement les secteurs de début (`start`).
+  - Suppression sécurisée via `sfdisk --delete <disk> <num>` précédée d'un démontage propre (`umount -f`) et nettoyage des signatures (`wipefs -a`).
+  - Verrouillage absolu interdisant la suppression ou l'altération des partitions contenant `/`, `/boot` ou `/nix`.
+
+---
+
+### Périphériques Amovibles & Éjection Sécurisée (USB, SSD Externes, Lecteurs Optiques) :
+- **Intégration NixOS Udisks2** :
+  - Déclaration de `services.udisks2.enable = true;` dans `modules/storage/default.nix` complété par `parted`, `eject`, `dosfstools`, `exfatprogs`, `ntfs3g`, `udisks2`.
+  - Conforme à la Règle n°2 de discernement : outils CLI purs sans dépendance `nix-ld`.
+- **Scan consolidé (`scan_removable_devices`)** :
+  - Filtrage `lsblk -b --json` sur `tran == "usb"`, `rm == true`, `hotplug == true` et les lecteurs optiques (`type == "rom"` ou nom `sr*`).
+- **Éjection physique et logicielle propre** :
+  - Synchronisation des buffers (`sync`), démontage de toutes les partitions associées (`umount -f`).
+  - Pour les lecteurs optiques : ouverture mécanique du tiroir via `eject <dev>`.
+  - Pour les périphériques USB : coupure de l'alimentation électrique du port via `udisksctl power-off -b <dev>` (avec fallback `eject`).
+  - Déclenchement d'un toast flottant `#safe-removal-toast` avec compte à rebours de 10 secondes : *« Votre périphérique [nom] peut être déconnecté en toute sécurité »*.
+
+---
+
 ## 🔄 4. Protocole d'Actualisation Continue de ce Fichier
 
 À chaque fois qu'un bogue est résolu, qu'un écueil est identifié ou qu'une nouvelle architecture est introduite :
