@@ -17,6 +17,13 @@ in
       enableNvidia = dockerCfg.enableNvidia;
     };
 
+    # Autoriser l'interface bridge Docker et le forwarding dans le pare-feu NixOS
+    networking.firewall.trustedInterfaces = lib.mkIf dockerCfg.enable [ "docker0" ];
+    networking.firewall.extraCommands = lib.mkIf dockerCfg.enable ''
+      # Autoriser le transit vers les conteneurs publiés via la chaîne DOCKER-USER officielle
+      iptables -I DOCKER-USER -j ACCEPT 2>/dev/null || true
+    '';
+
     # Backend OCI pour conteneurs déclaratifs
     virtualisation.oci-containers.backend = lib.mkIf dockerCfg.enable "docker";
 

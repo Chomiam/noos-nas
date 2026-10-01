@@ -265,6 +265,16 @@ Ce guide regroupe les apprentissages essentiels, l'architecture des dépôts, le
       3. **Auto-allocation à la demande** : Si un LV spécifique est ciblé mais n'existe pas encore dans le VG (`lvs <vg>/<lv>` absent) et que `force_format` est demandé, exécuter automatiquement `lvcreate --type <raid_type> -l 100%FREE -n <lv> <vg>`.
       4. **Génération synchrone des nœuds spéciaux** : Toujours exécuter `vgmknodes` et `udevadm settle --timeout=3` après l'activation. Tester à la fois `/dev/<vg>/<lv>`, `/dev/mapper/<vg>-<lv>` (avec substitution des tirets LVM `--`), et vérifier via `dmsetup info` en repli.
 
+24. **Gestion du Pare-feu NixOS et Conteneurs Docker Multi-ports (DOCKER-USER, ports web vs DNS 53) :**
+    - *Erreurs passées* :
+      1. Par défaut sous NixOS, `networking.firewall.enable = true` applique une politique `DROP` sur le trafic non autorisé. Lorsque des conteneurs Docker publient des ports sur l'hôte, les paquets entrants provenant du LAN arrivant sur l'interface physique traversent la chaîne `FORWARD`. Faute d'inclusion de la règle `DOCKER-USER -j ACCEPT` et de `docker0` dans `trustedInterfaces`, le pare-feu NixOS effectue un DROP silencieux, ce qui provoque un **timeout TCP / chargement infini** dans le navigateur des clients LAN (ex: `http://<IP_NAS>:3000`).
+      2. Dans l'App Store (`docker_store.rs`), `customize_compose_yaml` remplaçait aveuglément la première ligne de port du template par le port configuré. Pour AdGuard Home, la première ligne étant `53:53/tcp`, celle-ci était réécrite en `3000:53/tcp`, redirigeant le port HTTP 3000 vers le démon DNS !
+      3. Dans `services.rs`, `extract_web_port` sélectionnait le premier port exposé (53), générant un lien `http://<IP_NAS>:53` bloqué par les navigateurs (`ERR_UNSAFE_PORT`).
+    - *Règles & Patterns éprouvés* :
+      1. **NixOS Firewall & Docker** : Toujours inclure `networking.firewall.trustedInterfaces = [ "docker0" ];` et `networking.firewall.extraCommands = '' iptables -I DOCKER-USER -j ACCEPT 2>/dev/null || true '';` dans `modules/services/containers.nix`. Cela permet au trafic légitime des conteneurs explicitement publiés par Docker d'être routé sans blocage tout en conservant la protection intégrale des ports du système hôte (`INPUT`).
+      2. **Résolution ciblée des ports d'interface Web** : Dans `extract_web_port`, toujours filtrer la liste des ports non-web / unsafe (53, 67, 68, 853, 22...) et prioriser les ports Web canoniques (3000, 80, 8080, 443, etc.).
+      3. **Substitution intelligente dans les Compose multi-ports** : Ne jamais écraser un port DNS (53) ou auxiliaire lors de la personnalisation du port Web d'une application de boutique.
+
 ---
 
 
