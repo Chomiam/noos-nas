@@ -226,6 +226,34 @@ pub fn interpolate_pwm(temp: f32, curve: &[CurvePoint]) -> u8 {
 
 ---
 
+### Architecture App Store STEvE_OS (`steveos_nas_store` & Docker Compose v2) :
+- **Pourquoi Docker Compose asynchrone plutôt que la recompilation déclarative NixOS pour 600+ applications** :
+  - Déployer des applications tierces via `virtualisation.oci-containers` forcerait un `nixos-rebuild switch` (plusieurs minutes d'évaluation, compilation et création de générations système) à chaque clic d'installation ou modification de variable.
+  - L'orchestrateur Docker Compose v2 asynchrone permet un déploiement instantané (< 2 secondes) sous `/home/<user>/docker/<app_id>/compose.yaml` avec persistance unifiée dans `./data/...`.
+- **Pipeline d'ingestion & Audit qualité rigoureux (`steveos_nas_store`)** :
+  - Ingestion automatisée depuis les collections amont (Portainer types 1 et 3) avec résolution des stacks Git distantes.
+  - Récriture impérative des chemins hôtes arbitraires (`/portainer/...`, `/srv/docker/...`) vers des chemins relatifs fiables et propres `./data/...`.
+  - Élimination des applications obsolètes ou abandonnées :
+    - Test de conformité Docker Compose Specification via `docker compose config -q`.
+    - Détection des dépôts 404 et des images Docker Hub non maintenues (dernière mise à jour antérieure à 3 ans sans mise à jour).
+    - Filtrage des projets dépréciés ou archivés (`deprecated`, `unmaintained`, `archived`, `discontinued`, `eol`).
+- **Piège critique du typage des ports dans les schémas de données (Serde Rust)** :
+  - *Erreur passée* : Typer `default_port` en `u16` dans les structures de catalogue Rust.
+  - *Impact* : Des templates tiers amont contenaient des erreurs de saisie (ex: `98000`, `82303`). Serde échouait silencieusement à désérialiser tout le catalogue `store.json`, provoquant un repli sur un catalogue vide (0 applications).
+  - *Règle* : Toujours utiliser `u32` pour les ports dans les structures Rust Serde afin de tolérer toute valeur brute, et normaliser impérativement les ports dans la plage TCP valide (1-65535) lors de l'ingestion et de l'audit.
+- **Alerte Bouclier Pare-feu 1-Clic (`🛡️`) dans la modale d'installation** :
+  - NixOS bloquant tout port non déclaré par défaut, l'installation d'une application Docker nécessite l'ouverture de son port hôte pour un accès LAN.
+  - Intégrer une carte d'alerte pare-feu interactive dans la fenêtre d'installation :
+    - Détection en direct via `/api/firewall`.
+    - Si ouvert : pastille verte rassurante (`🛡️ Port X (TCP) Ouvert`).
+    - Si fermé : avertissement pédagogique jaune avec bouton d'action immédiate `🔓 Ouvrir le port X en 1 clic`.
+    - L'action appelle `POST /api/firewall/rules` (`category: "Conteneurs"`), actualise le pare-feu et bascule l'alerte au vert sans interrompre l'installation.
+- **Fluidité de rendu du Store (Slicing 48 applications)** :
+  - Ne jamais insérer plus de 50 à 100 cartes complexes simultanément dans le DOM.
+  - Appliquer un découpage par tranches de 48 items avec un bouton dynamique "Afficher plus d'applications (+48)", tout en appliquant les recherches, tris et filtres par catégories sur l'intégralité du catalogue (640+ applications) en mémoire.
+
+---
+
 ## 🔄 4. Protocole d'Actualisation Continue de ce Fichier
 
 À chaque fois qu'un bogue est résolu, qu'un écueil est identifié ou qu'une nouvelle architecture est introduite :
