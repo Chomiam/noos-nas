@@ -305,6 +305,15 @@ Ce guide regroupe les apprentissages essentiels, l'architecture des dépôts, le
          - Chiffrement Matériel SMB3 : `smb encrypt = mandatory` ou `desired` (AES-128/256-GCM).
       5. **Séparation Déclarative des Utilisateurs** : La gestion et la création des utilisateurs/mots de passe relèvent exclusivement du module et de l'onglet `Utilisateurs & Groupes` (`#tab-users`). L'onglet Samba ne doit pas réinventer la création de comptes, mais se concentrer sur l'attribution fine des droits d'accès (`valid_users`, `write_list`, `read_list`).
 
+27. **Architecture sFTP Haute Sécurité, Confinement Chroot Jail et Filtrage des Utilisateurs SSH :**
+    - *Pièges & Bonnes pratiques sFTP / SSH* :
+      1. **Sous-système internal-sftp vs sftp-server binaire** : Toujours utiliser `internal-sftp` pour OpenSSH. Contrairement à `sftp-server` (qui requiert la présence des bibliothèques dynamiques `/lib`, `/bin/sh` et des fichiers de périphériques dans la prison chroot), `internal-sftp` s'exécute directement dans le contexte du processus sshd sans nécessiter aucune arborescence FHS dans le dossier chrooté.
+      2. **Filtrage des Comptes Autorisés SSH** : Ne jamais exposer tous les utilisateurs du système au protocole sFTP. Les comptes créés avec le shell `/run/current-system/sw/bin/nologin` (utilisateurs de partages Samba seuls) doivent être formellement exclus de la liste de sélection et de l'accès SSH.
+      3. **Inclusion Déclarative OpenSSH** : Utiliser `services.openssh.extraConfig = "Include /var/lib/steveos/sftp_shares.conf\\n";` pour injecter dynamiquement les blocs `Match User` et `ChrootDirectory` sans modifier impurement la configuration globale de NixOS.
+      4. **Mode Lecture Seule sFTP** : Dans OpenSSH, l'interdiction d'écriture et d'upload sFTP s'applique de manière native via le drapeau `-R` : `ForceCommand internal-sftp -R -u 002`.
+      5. **Rechargement à Chaud sans Déconnexion (SIGHUP)** : Toujours recharger le démon OpenSSH via `systemctl reload-or-restart sshd` (signal HUP). Les sessions de transfert sFTP en cours ne sont pas interrompues lors de l'ajout ou de la modification d'un partage.
+
+
 
 ---
 
