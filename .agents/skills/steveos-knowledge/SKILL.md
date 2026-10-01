@@ -398,6 +398,16 @@ Ce guide regroupe les apprentissages essentiels, l'architecture des dépôts, le
          }
          ```
 
+32. **Parsing Robuste des Métriques `/proc/mdstat` (Barre de Progression ASCII vs Symboles et Lignes Multiples) :**
+    - *Erreurs passées* :
+      1. Utiliser `line.split('=')` pour extraire le pourcentage de resynchronisation ou reconstruction RAID (`resync = 88.8%`). Or la ligne de `/proc/mdstat` contient la barre ASCII `[=========>...]` qui contient une succession de caractères `=`. `split('=')` fragmentait la barre de progression et `nth(1)` renvoyait une chaîne vide, forçant le fallback à `0.0%`.
+      2. Extraire le nom de la grappe sur la ligne immédiatement précédente (`lines[idx - 1]`). Or le noyau insère entre la déclaration du périphérique (`md127 : active ...`) et la progression (`[===>...]`) une ligne intermédiaire contenant le nombre de blocs et le superbloc (`7813772288 blocks super 1.2 ...`). Le premier token extrait était donc le nombre de blocs au lieu de `md127`.
+      3. Utiliser des entités HTML littérales (`&bull;`) dans des assignations `textContent` en JavaScript au lieu du caractère Unicode réel (`•`).
+    - *Règles & Patterns éprouvés* :
+      1. **Isolation par délimiteur `%`** : Toujours cibler le token précédant le délimiteur `%` : `line.split('%').next().and_then(|s| s.split_whitespace().last())`.
+      2. **Scan rétrograde des périphériques `md*`** : Parcourir les lignes antérieures en boucle inversée (`lines[..idx].iter().rev()`) jusqu'à rencontrer un entête `md* :` valide.
+      3. **Unicode natif dans le DOM** : Dans `textContent`, employer directement le caractère `•` plutôt que l'entité HTML `&bull;`.
+
 ---
 
 ## 🛠️ 3. Patterns Recommandés & Recettes Éprouvées
