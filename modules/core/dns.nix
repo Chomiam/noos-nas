@@ -26,8 +26,10 @@ in
   networking.nameservers = effectiveServers;
 
   # 2. Gestion de systemd-resolved pour libérer le port 53 (0.0.0.0:53 / 127.0.0.53:53)
-  # Indispensable pour éviter tout conflit lors du déploiement d'AdGuard Home ou Pi-hole
+  # Indispensable pour éviter tout conflit lors du déploiement d'AdGuard Home ou Pi-hole.
+  # Note critique : enable = true est OBLIGATOIRE sous NixOS pour que les options settings soient appliquées et génèrent /etc/systemd/resolved.conf.
   services.resolved = lib.mkIf freePort53 {
+    enable = true;
     settings = {
       Resolve = {
         DNSStubListener = "no";

@@ -86,12 +86,13 @@ in
         Type = "oneshot";
         RemainAfterExit = true;
         ExecStart = pkgs.writeShellScript "libvirt-init-default-net" ''
-          if ! ${pkgs.libvirt}/bin/virsh -c qemu:///system net-info default >/dev/null 2>&1; then
-            cat << 'EOF' > /run/libvirt/default-net.xml
+          mkdir -p /run/libvirt
+          cat << 'EOF' > /run/libvirt/default-net.xml
 <network>
   <name>default</name>
   <forward mode='nat'/>
   <bridge name='virbr0' stp='on' delay='0'/>
+  <dns enable='no'/>
   <ip address='192.168.122.1' netmask='255.255.255.0'>
     <dhcp>
       <range start='192.168.122.2' end='192.168.122.254'/>
@@ -99,9 +100,10 @@ in
   </ip>
 </network>
 EOF
-            ${pkgs.libvirt}/bin/virsh -c qemu:///system net-define /run/libvirt/default-net.xml || true
-            rm -f /run/libvirt/default-net.xml
-          fi
+          # Définition / mise à jour déclarative du réseau libvirt avec désactivation du port 53
+          ${pkgs.libvirt}/bin/virsh -c qemu:///system net-define /run/libvirt/default-net.xml || true
+          rm -f /run/libvirt/default-net.xml
+
           ${pkgs.libvirt}/bin/virsh -c qemu:///system net-autostart default || true
           if ! LC_ALL=C ${pkgs.libvirt}/bin/virsh -c qemu:///system net-info default 2>&1 | grep -q "Active:.*yes"; then
             ${pkgs.libvirt}/bin/virsh -c qemu:///system net-start default || true

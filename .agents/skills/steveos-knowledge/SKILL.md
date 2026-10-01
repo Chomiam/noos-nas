@@ -243,7 +243,18 @@ Ce guide regroupe les apprentissages essentiels, l'architecture des dépôts, le
       2. **Filtrage contextuel étanche** : Toujours filtrer `!name.startsWith("steveos-game")` dans `loadDockerContainers()` pour isoler les conteneurs applicatifs de la boutique des conteneurs de jeux.
       3. **Suppression sécurisée avec modale (#modal-delete-docker)** : Confirmation obligatoire avec rappel de la préservation des volumes sur l'hôte et case à cocher pour purger l'image Docker (`delete_image=true`). Le backend exécute un `docker compose down` si un fichier compose existe ou un `docker stop` + `docker rm` en fallback, suivi de `docker rmi` si demandé.
 
+22. **Libération Totale du Port 53 pour AdGuard Home / Pi-hole (systemd-resolved, libvirt & sudo runtime) :**
+    - *Erreurs passées* :
+      1. Conditionner `services.resolved.settings.Resolve.DNSStubListener = "no"` sans positionner `services.resolved.enable = true` dans NixOS. Par défaut sous Nixpkgs, `services.resolved.enable = false`, ce qui fait que NixOS ignore complètement `settings` et ne génère aucun fichier `/etc/systemd/resolved.conf`. Le démon `systemd-resolved` hérité au niveau système démarre donc avec sa configuration par défaut et continue d'écouter sur `127.0.0.53:53` et `127.0.0.54:53`.
+      2. Le réseau NAT par défaut de libvirt (`virbr0`) démarre automatiquement `dnsmasq` sur `192.168.122.1:53`. Même s'il écoute sur l'adresse du bridge virtuel, sous le noyau Linux cela provoque un conflit `EADDRINUSE` lorsque Docker tente de lier `0.0.0.0:53`.
+      3. Le backend Rust tentait d'écrire dans `/etc/systemd/` et d'appeler `systemctl` sans `sudo` ; les appels échouaient silencieusement faute de privilèges root.
+    - *Règles & Patterns éprouvés* :
+      1. **NixOS** : Toujours coupler `services.resolved.enable = true;` avec `services.resolved.settings.Resolve.DNSStubListener = "no";` pour garantir la génération déclarative de `resolved.conf`.
+      2. **Libvirt** : Toujours inclure `<dns enable='no'/>` dans la définition du réseau `virbr0` afin que `dnsmasq` ne fournisse que le DHCP sans écouter sur le port 53.
+      3. **Dashboard Web** : Exécuter la libération à chaud via `sudo systemctl stop/restart systemd-resolved` (bénéficiant de `security.sudo.extraRules` sans mot de passe) et injecter proactivement la libération du port 53 avant le `docker compose up` des applications DNS.
+
 ---
+
 
 
 
