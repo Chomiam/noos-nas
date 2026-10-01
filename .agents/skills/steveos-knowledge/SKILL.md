@@ -112,6 +112,13 @@ Ce guide regroupe les apprentissages essentiels, l'architecture des dépôts, le
       2. Toujours valider `if (!res.ok) return;` avant de parser le flux JSON (`SyntaxError: Unexpected end of JSON input`).
       3. Côté Backend Rust : lancer toutes les mesures de latence en parallèle avec `tokio::spawn` et des timeouts très stricts (`tokio::time::timeout(Duration::from_millis(350), ...)`). Zéro appel bloquant à `ping` ou sous-processus synchrone.
 
+14. **Intégrité de l'arborescence DOM des sous-onglets (`.network-subpane`) :**
+    - *Erreur passée* : Omettre la fermeture `</div>` d'un sous-onglet (ex: `subtab-sftp`), ce qui imbriquait accidentellement le nouveau sous-onglet suivant (`subtab-dns`) à l'intérieur de l'ancien.
+    - *Conséquences* : Lorsque le premier sous-onglet devient inactif (`display: none`), tous les sous-onglets enfants imbriqués sont masqués en cascade. Le clic sur l'onglet semble inopérant et laisse un écran complètement blanc.
+    - *Règle* :
+      1. Tous les conteneurs de sous-onglets (`.network-subpane`, `.containers-subpane`) doivent impérativement être des enfants directs de premier niveau du panneau d'onglet parent (`.tab-pane`).
+      2. Toujours valider l'arbre DOM et les ancêtres des nouveaux conteneurs avec un parser DOM automatisé pour garantir l'absence d'imbrication involontaire.
+
 ### C. Gestion des Médias & Authentification
 6. **Streaming média (Lecteurs Audio, Vidéo, Visionneuse) :**
    - *Erreur passée* : Les balises natives `<audio>`, `<video>` et `<img>` n'envoient pas les en-têtes HTTP `Authorization: Bearer ...`.
