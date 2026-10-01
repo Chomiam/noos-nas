@@ -287,6 +287,23 @@ pub fn interpolate_pwm(temp: f32, curve: &[CurvePoint]) -> u8 {
 
 ---
 
+### Easter Egg Rétro & Animation Pixel-Art (Dashboard) :
+- **Déclenchement & Fenêtre glissante** :
+  - Détection de 5 clics consécutifs sur le logo de marque (`#header-logo-wrap`) avec une temporisation glissante de 2.5 secondes (`clearTimeout`).
+  - Animation de micro-rebond (`logoClickBounce`) sur le logo à chaque clic pour donner un retour tactile immédiat.
+- **Rendu Pixel-Art Vectoriel Optimisé (SVG RLE)** :
+  - Créer des sprites de 28x28 pixels nets via `shape-rendering="crispEdges"` et `image-rendering="pixelated"`.
+  - Fusionner les pixels horizontaux contigus de même couleur (`width="N"`) en encodage RLE pour diviser le poids du DOM par 5 tout en garantissant un rendu 100% vectoriel sans artefacts de flou.
+  - Cycle de course à 4 frames synchronisées (`[data-frame="0..3"]`) avec foulées alternées, canne levée, sac en balancier et nuage de poussière.
+- **Synthèse Sonore Web Audio API (Zero-Dependency)** :
+  - Utiliser l'API native `AudioContext` (activée automatiquement grâce au geste utilisateur des 5 clics) pour synthétiser en direct des pas de course légers.
+  - Alterner la fréquence (245Hz / 290Hz) et le filtrage passe-bande entre le pied gauche et le pied droit pour un effet sonore authentique et rythmé.
+  - Jouer un tintement d'arrivée doux à la fin du sprint (5.8s) avant de nettoyer le conteneur du DOM.
+- **Positionnement de la Bulle de Dialogue (Anti-clipping)** :
+  - Lorsque la piste est située sur la bordure inférieure du header (`bottom: -2px`), positionner la bulle de dialogue **en-dessous** du personnage (`top: 58px; transform: translateX(-50%)`) avec une flèche pointant vers le haut, afin qu'elle flotte harmonieusement au-dessus des onglets de navigation sans jamais être tronquée par le haut de la fenêtre du navigateur.
+
+---
+
 ## 🔄 4. Protocole d'Actualisation Continue de ce Fichier
 
 À chaque fois qu'un bogue est résolu, qu'un écueil est identifié ou qu'une nouvelle architecture est introduite :
