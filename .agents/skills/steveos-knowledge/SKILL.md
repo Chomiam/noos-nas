@@ -173,6 +173,25 @@ Ce guide regroupe les apprentissages essentiels, l'architecture des dépôts, le
       2. Identifier les cartes GPU (`i915`, `xe`) et qualifier l'état `is_autonomous_firmware = true`.
       3. Dans l'UI, afficher un encart d'information Catppuccin explicatif (`🛡️ Régulation Autonome VBIOS`) et désactiver l'écrasement manuel ou le test PWM avec une mention pédagogique, tout en continuant à afficher le tachymètre RPM en temps réel.
 
+### F. Gestion des Périphériques de Bloc, LVM, RAID & Erreurs Système
+17. **Activation préalable indispensable des volumes logiques LVM (`vgchange -ay`) & Vérification de nœud :**
+    - *Erreur passée* : Tenter de sonder (`blkid`) ou de formater (`mkfs.btrfs`) un volume logique LVM ou une grappe RAID (ex: `/dev/vg1/storage`) sans vérifier au préalable si le nœud de fichier bloc existe dans `/dev`.
+    - *Impact* : Après un redémarrage, une importation de pool ou si le volume group n'a pas été activé par systemd/udev, `/dev/vg1/storage` est absent. `blkid` échoue en retournant un code d'erreur et une sortie vide. L'ancien code en déduisait à tort `!has_fs` et lançait un formatage forcé `mkfs.btrfs -f /dev/vg1/storage`, provoquant une cascade d'erreurs critiques (`ERROR: mount check: cannot open ...: No such file or directory`, `ERROR: zoned: unable to stat ...`).
+    - *Règle* :
+      1. Extraire le nom du Volume Group (`/dev/<vg>/<lv>` ou `/dev/mapper/<vg>-<lv>`) et exécuter impérativement `vgchange -ay <vg>` suivi de `udevadm settle` pour activer les volumes et forcer la création des liens symboliques et des nœuds `/dev`.
+      2. Vérifier physiquement l'existence du nœud (`Path::new(&dev).exists()`).
+      3. Si le fichier spécial de bloc n'existe toujours pas, interrompre immédiatement avec une erreur claire et descriptive, sans JAMAIS présumer qu'il s'agit d'un disque vierge à formater.
+      4. Double confirmation du système de fichiers : si `blkid` ne renvoie rien, sonder avec `lsblk -no FSTYPE` avant d'autoriser tout formatage.
+
+18. **Restitution des erreurs CLI/système et persistance des alertes (Toasts d'erreur 10s+) :**
+    - *Erreur passée* : Afficher les erreurs système brutes (multi-lignes de mkfs, mount, udev, btrfs) dans une notification Toast standard de 3,5 secondes, sans formatage, sans bouton de copie et sans temps de lecture suffisant.
+    - *Impact* : L'utilisateur ne dispose pas du temps nécessaire pour lire le message qui disparaît immédiatement, et le texte tronqué empêche tout diagnostic ou transmission au support.
+    - *Règle* :
+      1. Les erreurs système et de montage doivent s'afficher dans un composant dédié (`#system-error-toast` ou toast d'erreur persistant) affiché pendant **au moins 10 à 12 secondes**.
+      2. Fournir une barre de décompte visuelle (`countdown progress bar`) avec mise en pause au survol de la souris (`mouseenter` / `mouseleave`).
+      3. Séparer le diagnostic en un résumé humain court et une zone de terminal monospace rétro-éclairée (`<pre><code>`) pour les logs techniques détaillés.
+      4. Intégrer un bouton de copie rapide en 1 clic (`📋 Copier le diagnostic`) et une croix de fermeture manuelle.
+
 ---
 
 ## 🛠️ 3. Patterns Recommandés & Recettes Éprouvées
@@ -343,7 +362,21 @@ pub fn interpolate_pwm(temp: f32, curve: &[CurvePoint]) -> u8 {
   - Remplacer les cartes verticales volumineuses par des lignes épurées et lisibles contenant l'identifiant physique (`Slot M.2 NVMe`, `Baie 1 (SATA)`), le modèle, le numéro de série, la capacité, la télémétrie S.M.A.R.T. et thermique, ainsi que l'état d'alimentation.
 - **Cadre dédié pour les Grappes RAID (`.raid-cluster-frame`)** :
   - Encadrer visuellement chaque grappe RAID avec une bordure Catppuccin Mocha douce et une section dédiée aux **disques physiques membres de la grappe** (`.raid-members-section`), reliés par des connecteurs d'arbres hiérarchiques (`├──`, `└──`).
-  - Séparer nettement les disques autonomes (non membres de grappes RAID) pour une lisibilité immédiate de l'infrastructure physique et logique.
+### Résolution et Activation Automatique des Périphériques LVM/RAID (`src/storage.rs`) :
+- Toujours encapsuler la détection des disques et le montage dans une fonction de résolution préalable :
+```rust
+fn resolve_and_activate_block_device(clean_dev: &str, req: &MountRequest) -> Result<String, String> {
+    // 1. Détection des volumes LVM (/dev/<vg>/<lv> ou /dev/mapper/<vg>-<lv>)
+    // 2. Activation automatique via `vgchange -ay <vg>` et synchronisation udev `udevadm settle`
+    // 3. Résolution symlink et chemin canonique
+    // 4. Validation physique d'existence : std::path::Path::new(&resolved).exists()
+    // 5. En cas de non-existence physique, interrompre immédiatement SANS tenter de formater
+}
+```
+- **Bannière d'erreur ergonomique (Toast interactif 10s+)** :
+  - `#system-error-toast` flottant au premier plan absolu (`z-index: 100060 !important;`) avec accentuation rouge crimson et glassmorphism Catppuccin Mocha.
+  - Temporisation minimale de 10 à 12 secondes avec mise en pause au survol de la souris (`mouseenter` / `mouseleave`).
+  - Terminal de logs rétro-éclairé rétractable (`<pre><code>`) et bouton de copie en 1 clic (`📋 Copier`).
 
 ---
 
