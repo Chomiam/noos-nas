@@ -322,6 +322,23 @@ Ce guide regroupe les apprentissages essentiels, l'architecture des dépôts, le
       3. **Découverte Passive et Non-Bloquante** : La détection des partages LAN doit combiner la table ARP du noyau (`/proc/net/arp`), mDNS/Avahi et des sondes TCP asynchrones sur ports 445 (SMB) et 22 (sFTP) avec des timeouts très courts (<= 250ms) pour ne jamais bloquer l interface.
       4. **VFS Transparente pour l Explorateur** : En montant les partages sous `/mnt/remote/<proto>/<id>`, l explorateur de fichiers réutilise 100% de ses fonctionnalités natives (streaming, renommage, compression, upload/download, miniatures) sans avoir besoin d écrire un client sFTP/SMB virtuel.
 
+29. **Codes d'arrêt de conteneurs Docker (SIGINT 130 / SIGTERM 143 vs crash) & Délai de grâce pour serveurs de jeu :**
+    - *Erreurs passées* :
+      1. Catégoriser tout code d'arrêt non nul (`exit_code != 0`) d'un conteneur arrêté comme un crash critique (`s.status = "error"`).
+      2. Lorsqu'un utilisateur arrêtait proprement son serveur Minecraft, Palworld ou Valheim, le conteneur s'arrêtait avec le code 130 ou 143. Le dashboard affichait une pastille rouge alarmante « Arrêt anormal (Code 130) » ou « Arrêté par signal SIGTERM (143) » et un bouton « Crash Log », faisant croire à une défaillance brutale.
+      3. Exécuter `docker stop <container>` avec le timeout par défaut (10 secondes), insuffisant pour les serveurs de jeu nécessitant de sauvegarder de volumineux chunks sur disque avant l'extinction, ce qui entraînait parfois un arrêt forcé par `SIGKILL` (code 137).
+    - *Règles & Patterns éprouvés* :
+      1. **Codes de signal conventionnels Linux/POSIX (128 + N)** :
+         - Interruption utilisateur / signal d'arrêt propre : `SIGINT` (signal 2) -> Code **130** (`128 + 2`).
+         - Signal de terminaison gracieux standard Docker : `SIGTERM` (signal 15) -> Code **143** (`128 + 15`).
+         - Sortie nominale : Code **0**.
+         - Tous ces codes (0, 130, 143) traduisent un arrêt normal et ordonné du processus, et doivent impérativement être qualifiés de `s.status = "stopped"` avec une description rassurante (« Arrêté proprement »).
+      2. **Véritables codes de crash ou d'anomalie** :
+         - Code 137 (`128 + 9`, SIGKILL) : conteneur tué de force par timeout ou saturé en RAM (`OOMKilled`).
+         - Code 139 (`128 + 11`, SIGSEGV) : violation d'accès mémoire / crash binaire natif.
+         - Code 1 : erreur applicative non gérée (script d'entrypoint échoué, dépendance manquante).
+         - Seuls ces codes justifient l'état `s.status = "error"` et le bouton d'inspection des logs de crash.
+      3. **Délai de grâce généreux (`-t 30`)** : Toujours allouer au moins 25 à 30 secondes (`docker stop -t 30 <container>` et `docker restart -t 30 <container>`) aux commandes d'arrêt et redémarrage de serveurs de jeu afin de laisser le temps aux moteurs de jeu d'achever la synchronisation sur disque sans subir un SIGKILL prématuré.
 
 ---
 
