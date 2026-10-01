@@ -367,6 +367,39 @@ Ce guide regroupe les apprentissages essentiels, l'architecture des dépôts, le
 
 
 
+31. **Scoping Strict des Verrous Asynchrones Tokio (`RwLock`) dans les Middlewares Axum & Prévention des Interblocages Post-Reboot :**
+    - *Erreurs passées* :
+      1. Maintenir un verrou d'écriture (`RwLockWriteGuard`) ou de lecture (`RwLockReadGuard`) actif pendant l'évaluation de `next.run(req).await` dans un middleware Axum (`auth_middleware`).
+      2. Lors d'un redémarrage du système, le cache de sessions en mémoire vive est vide mais les sessions persistent sur disque (`/var/lib/steveos/sessions.json`). Lorsque le navigateur se reconnecte avec des dizaines de requêtes simultanées, la première requête recharge la session depuis le disque et prend un verrou d'écriture `sessions_lock.write().await`. En exécutant `return next.run(req).await;` au sein du scope de ce verrou, le verrou exclusif reste verrouillé pendant toute la durée du traitement de la requête HTTP (qui peut durer 1 à 2 secondes pour les sondes matérielles).
+      3. Toutes les requêtes concurrentes s'empilent en attente de lecture (`sessions_lock.read().await`).
+      4. Si le handler de la première requête (ou une tâche fille) requiert les détails de session via `get_session_from_headers`, il sollicite un verrou de lecture sur la même tâche. Comme le verrou Tokio `RwLock` n'est pas réentrant, cela engendre un interblocage immédiat (deadlock) et permanent, gelant la totalité des 48 threads Tokio de l'application dans `futex(FUTEX_WAIT_PRIVATE, ...)`.
+    - *Règles & Patterns éprouvés* :
+      1. **Isolation stricte par blocs `{ ... }` (Drop immédiat)** : Tout verrou `RwLockReadGuard` ou `RwLockWriteGuard` doit impérativement être acquis, utilisé et relâché au sein d'un sous-bloc explicite `{ ... }` avant tout passage au middleware suivant (`next.run(req).await`) ou toute opération I/O asynchrone longue.
+      2. **Pattern de validation sans maintien de garde** :
+         ```rust
+         let is_valid = {
+             let sessions = sessions_lock.read().await;
+             sessions.get(&token).map(|s| s.expires_at > now).unwrap_or(false)
+         }; // La garde `sessions` est détruite et le verrou libéré ici !
+         if is_valid {
+             return next.run(req).await;
+         }
+         ```
+      3. **Même règle pour la restauration depuis le disque** :
+         ```rust
+         if let Some(session) = disk_session {
+             if session.expires_at > now {
+                 {
+                     let mut sessions = sessions_lock.write().await;
+                     sessions.insert(token, session);
+                 } // Verrou d'écriture libéré immédiatement en RAM
+                 return next.run(req).await;
+             }
+         }
+         ```
+
+---
+
 ## 🛠️ 3. Patterns Recommandés & Recettes Éprouvées
 
 ### Comptage ultra-rapide des générations NixOS (0ms) :
