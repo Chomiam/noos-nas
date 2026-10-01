@@ -19,10 +19,12 @@ Ce guide regroupe les apprentissages essentiels, l'architecture des dépôts, le
 | :--- | :--- | :--- |
 | **`steveos-nas`** (`steve_os-nix`) | Configuration déclarative NixOS du NAS (Modules, Flake, services système, virtualisation, réseau, stockage ZFS/Btrfs). | `/home/chomiam/Projects/steveos-nas` |
 | **`steveos-nas-dashboard`** | Tableau de bord Web réactif & API haute performance (Backend Rust Axum, Frontend Vanilla JS/CSS Catppuccin Mocha). | `/home/chomiam/Projects/steveos-nas-dashboard` |
+| **`steveos_nas_store`** | Catalogue et templates Docker Compose officiels pour l'App Store du NAS (Nextcloud, Jellyfin, AdGuard Home, Vaultwarden, etc.). | `/home/chomiam/Projects/steveos_nas_store` (GitHub: `Chomiam/steveos_nas_store`) |
 | **`steve_nas_eggs`** | Catalogue d'Eggs de serveurs de jeux conteneurisés Docker (Minecraft, Palworld, Valheim, Terraria, CS2, Enshrouded, etc.). | Dépôt GitHub officiel `Chomiam/steve_nas_eggs` |
 
 ### Principes d'intégration :
 - `steveos-nas` intègre `steveos-nas-dashboard` via une entrée Flake (`flake.nix` / `flake.lock`).
+- `steveos-nas-dashboard` interroge dynamiquement le dépôt distant `steveos_nas_store` pour l'installation en 1 clic des applications Docker.
 - Les binaires du Dashboard sont construits par **GitHub Actions** et hébergés sur le cache binaire Cachix officiel `steveos` (`https://steveos.cachix.org`).
 - Le Dashboard communique en local avec Docker, systemd, ZFS, WireGuard et NixOS via des commandes CLI isolées et des sockets IPC.
 
@@ -219,7 +221,20 @@ Ce guide regroupe les apprentissages essentiels, l'architecture des dépôts, le
       2. Le toast flottant en bas à droite ne doit afficher qu'un résumé concis d'une seule ligne et un bouton `🔍 Voir le rapport d'erreur` pour rouvrir la modale.
       3. Pour le port 53 (AdGuard Home, Pi-hole) : sous Linux, Docker tente de lier `0.0.0.0:53`, ce qui échoue si `systemd-resolved` écoute sur `127.0.0.53:53` ou si `dnsmasq` écoute sur `192.168.122.1:53`. La solution pérenne sous NixOS est de désactiver le stub listener local (`services.resolved.extraConfig = "DNSStubListener=no\n";`) tout en maintenant des résolveurs amonts dans `networking.nameservers` afin que le NAS conserve son accès Internet en toutes circonstances.
 
+20. **Publication impérative des Docker Compose sur `steveos_nas_store`, format standard et protocoles réseaux :**
+    - *Erreurs passées* :
+      1. Modifier localement ou générer un `docker-compose.yml` sans le committer ni le pousser sur le dépôt GitHub officiel [`Chomiam/steveos_nas_store`](https://github.com/Chomiam/steveos_nas_store). Le dashboard téléchargeant les manifests et compose directement depuis GitHub (`raw.githubusercontent.com`), toute omission laissait les NAS déployer des versions obsolètes, erronées ou cassées.
+      2. Mappages incomplets de protocoles : pour les services DNS (AdGuard Home, Pi-hole), mapper uniquement `53:53` (TCP seul sous Docker). Or 99% du trafic DNS standard s'exécute en UDP, provoquant un échec total de résolution DNS des clients.
+      3. Omission des ports d'administration Web : mapper uniquement le port applicatif (53) sans mapper le port d'initialisation et d'interface web (`3000:3000`), entraînant un chargement infini dans le navigateur (`http://IP:3000`).
+      4. Déclarer des volumes inadaptés (ex: `/data` au lieu de `/opt/adguardhome/work` et `/opt/adguardhome/conf`).
+    - *Règles obligatoires* :
+      1. **Dépôt centralisé** : Toute modification sur une application Docker du store (compose, manifest, icône) DOIT être commitée et poussée immédiatement sur `https://github.com/Chomiam/steveos_nas_store`.
+      2. **Format standard avec commentaires d'en-tête décoratifs** : Chaque `compose.yaml` doit obligatoirement respecter l'en-tête officiel STEvE_OS avec métadonnées (`Application`, `Port hôte`, `Données hôte`, `Mode`) et bloc de transition NixOS en pied de page.
+      3. **Ports & Protocoles stricts** : Spécifier explicitement `/tcp` et `/udp` dès qu'un service écoute sur les deux (notamment port 53). Aligner `default_port` dans `manifest.json` et `store.json` sur le port réel de l'interface Web (ex: 3000 pour AdGuard Home).
+
 ---
+
+
 
 ## 🛠️ 3. Patterns Recommandés & Recettes Éprouvées
 
@@ -471,7 +486,49 @@ fn resolve_and_activate_block_device(clean_dev: &str, req: &MountRequest) -> Res
 
 ---
 
+### Standardisation des Templates Docker Compose (`steveos_nas_store`) :
+
+- **Format officiel obligatoire des fichiers `compose.yaml`** :
+  Tout template Docker Compose publié sur [`Chomiam/steveos_nas_store`](https://github.com/Chomiam/steveos_nas_store) doit obligatoirement intégrer le cartouche de métadonnées officiel en en-tête et le bloc de correspondance NixOS en pied de page :
+  ```yaml
+  # =========================================================================
+  # 🐳 STEvE_OS NAS Edition — Configuration Docker Compose
+  # Application  : <Nom de l'application> (<app_id>)
+  # Port hôte    : <port_principal_web>
+  # Données hôte : /home/{user}/docker/<app_id>
+  # Mode         : Production STEvE_OS Store
+  # =========================================================================
+
+  version: "3.8"
+
+  services:
+    <app_id>:
+      image: <image_officielle>:<tag>
+      container_name: <app_id>
+      restart: unless-stopped
+      ports:
+        - "<port_web>:<port_web>/tcp"
+        # Spécifier /tcp et /udp si nécessaire (ex: DNS sur port 53)
+      environment:
+        - TZ=Europe/Paris
+        - PUID=1000
+        - PGID=100
+      volumes:
+        - /home/{user}/docker/<app_id>/<dossier>:<chemin_conteneur>
+
+  # =========================================================================
+  # ❄️ Équivalent Déclaration NixOS (/etc/nixos/docker/<app_id>.nix)
+  # =========================================================================
+  ```
+- **Définition cohérente du port par défaut (`default_port`)** :
+  - Dans `manifest.json` et `store.json`, `default_port` doit toujours correspondre au port de l'interface utilisateur accessible dans le navigateur web (ex: `3000` pour AdGuard Home, et NON le port DNS `53`).
+- **Synchronisation immédiate sur GitHub** :
+  - Tout ajout ou modification dans `/home/chomiam/Projects/steveos_nas_store` doit faire l'objet d'un commit conventionnel et d'un push direct sur la branche `main` (`origin/main`), car le dashboard Web télécharge les templates bruts directement depuis GitHub (`raw.githubusercontent.com`).
+
+---
+
 ## 🔄 4. Protocole d'Actualisation Continue de ce Fichier
+
 
 À chaque fois qu'un bogue est résolu, qu'un écueil est identifié ou qu'une nouvelle architecture est introduite :
 1. Ajouter l'anomalie et la solution dans la section **2. Pièges Critiques**.

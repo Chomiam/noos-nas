@@ -101,5 +101,15 @@
     - Les recettes et patterns validés.
   - Objectif : capitaliser les acquis au fil des itérations pour éviter toute récidive.
 
+---
+
+## 🐳 Règle n°10 : Publication et Traçabilité Obligatoire sur `steveos_nas_store`
+- **Toute modification ou ajout de configuration Docker Compose (fichiers `compose.yaml`, `manifest.json`, `store.json`) pour les applications de l'App Store doit impérativement être committée et poussée sur le dépôt GitHub officiel [`Chomiam/steveos_nas_store`](https://github.com/Chomiam/steveos_nas_store).**
+- **Respect du format standardisé et des commentaires conventionnels** :
+  - Chaque `compose.yaml` doit obligatoirement comporter l'en-tête décoré standard STEvE_OS précisant l'application, les ports WebUI/DNS, les volumes hôtes et le mode déclaratif.
+  - Spécifier systématiquement le protocole réseau (`/tcp`, `/udp`) pour les services sensibles (comme le port `53:53/udp` + `53:53/tcp` pour AdGuard/Pi-hole).
+  - Définir `default_port` sur le port WebUI HTTP (ex: 3000 pour le setup AdGuard) pour garantir le bon fonctionnement des boutons d'ouverture dans le Dashboard Web.
+
+
 
 
