@@ -8,6 +8,16 @@
     ./scrub.nix
   ];
 
+  # Modules noyau indispensables pour le stockage RAID (LVM2 RAID, mdadm, Device Mapper)
+  boot.kernelModules = [
+    "dm-mod"
+    "dm-raid"
+    "raid0"
+    "raid1"
+    "raid456"
+    "raid10"
+  ];
+
   # Service de gestion et montage automatique des périphériques amovibles (USB, disques externes, lecteurs optiques)
   services.udisks2.enable = true;
   services.devmon.enable = true;

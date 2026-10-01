@@ -253,6 +253,18 @@ Ce guide regroupe les apprentissages essentiels, l'architecture des dépôts, le
       2. **Libvirt** : Toujours inclure `<dns enable='no'/>` dans la définition du réseau `virbr0` afin que `dnsmasq` ne fournisse que le DHCP sans écouter sur le port 53.
       3. **Dashboard Web** : Exécuter la libération à chaud via `sudo systemctl stop/restart systemd-resolved` (bénéficiant de `security.sudo.extraRules` sans mot de passe) et injecter proactivement la libération du port 53 avant le `docker compose up` des applications DNS.
 
+23. **Activation & Résolution Robuste des Périphériques LVM/RAID (`/dev/<vg>/<lv>`, `/dev/mapper/`) et Modules Noyau Hôte :**
+    - *Erreurs passées* :
+      1. Dans `resolve_and_activate_block_device`, lorsqu'un chemin complet de volume logique LVM (`/dev/vg1/storage`) était passé, le Cas A (`vgs vg1/storage`) échouait (car `vgs` n'attend qu'un nom de VG). Le Cas B prenait le relais mais ne chargeait pas les modules noyau RAID (`dm-raid`, `raid456`, etc.). Sans ces modules noyau, `lvchange -ay` échoue silencieusement sous Linux car le kernel ne peut pas instancier la cible device-mapper RAID5.
+      2. Si le volume logique `storage` n'avait pas encore été alloué dans le groupe `vg1`, le Cas B ne procédait à aucune création (`lvcreate`) lors d'une requête de formatage forcé (`force_format == true`), contrairement au Cas A.
+      3. Dépendance aveugle envers udev : `lvchange` active le device-mapper, mais les liens symboliques `/dev/<vg>/<lv>` et les fichiers de périphériques peuvent tarder à être créés par udev. Sans `vgmknodes`, le test `Path::new("/dev/vg1/storage").exists()` retournait `false` immédiatement.
+      4. Dans la configuration déclarative NixOS (`steveos-nas`), les modules noyau RAID (`dm-mod`, `dm-raid`, `raid0`, `raid1`, `raid456`, `raid10`) n'étaient pas déclarés dans `boot.kernelModules`, empêchant la reconnaissance native des grappes au démarrage système.
+    - *Règles & Patterns éprouvés* :
+      1. **Modules noyau déclaratifs & dynamiques** : Toujours inscrire les modules RAID dans `boot.kernelModules` dans `modules/storage/default.nix`, et charger proactivement `dm-mod`, `dm-raid`, `raid0`, `raid1`, `raid456`, `raid10` via `modprobe` dans le backend Rust avant toute activation LVM.
+      2. **Parsing & Résolution unifiée VG/LV** : Qu'on reçoive `/dev/<vg>/<lv>`, `<vg>/<lv>`, `/dev/mapper/<vg>-<lv>`, ou `/dev/<vg>`, décomposer en `(vg_candidate, lv_candidate)`. Si le VG existe (`vgs <vg>`), activer avec `vgchange -ay -K --activationmode degraded <vg>`.
+      3. **Auto-allocation à la demande** : Si un LV spécifique est ciblé mais n'existe pas encore dans le VG (`lvs <vg>/<lv>` absent) et que `force_format` est demandé, exécuter automatiquement `lvcreate --type <raid_type> -l 100%FREE -n <lv> <vg>`.
+      4. **Génération synchrone des nœuds spéciaux** : Toujours exécuter `vgmknodes` et `udevadm settle --timeout=3` après l'activation. Tester à la fois `/dev/<vg>/<lv>`, `/dev/mapper/<vg>-<lv>` (avec substitution des tirets LVM `--`), et vérifier via `dmsetup info` en repli.
+
 ---
 
 
