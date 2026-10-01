@@ -104,6 +104,14 @@ Ce guide regroupe les apprentissages essentiels, l'architecture des dépôts, le
       - Animer la sortie avec une classe CSS de fade-out et translation (`.toast-fading-out`) avant le masquage définitif (`display: none`).
       - Lors du rechargement de page (`checkInitialUpdateProgress`), calculer le delta de temps écoulé : masquer et purger immédiatement si plus de 10s se sont écoulées, ou planifier le masquage pour le temps restant.
 
+13. **Hydratation instantanée SWR et sondes réseau non-bloquantes (Onglet DNS & Télémetrie) :**
+    - *Erreur passée* : Déclencher des pings ICMP bloquants (`Command::new("ping")`) ou des connexions `TcpStream::connect_timeout` synchrones séquentielles dans les handlers d'API pour mesurer la latence des résolveurs DNS. Côté frontend, ne disposer d'aucun catalogue de repli local (UI vide tant que l'API n'a pas répondu) et parser `await res.json()` sans vérifier `res.ok`.
+    - *Conséquences* : Écran blanc / vide sur l'onglet Réseau > DNS si l'API retourne HTTP 404 (ancien binaire en cours) ou freeze complet de la requête HTTP pendant 10 secondes si certains résolveurs ou le port 53 ne répondent pas.
+    - *Règle* :
+      1. Côté Frontend : toujours implémenter le pattern SWR (Stale-While-Revalidate). Rendre immédiatement (0ms) un catalogue par défaut (`DEFAULT_DNS_PROVIDERS`) dans le DOM avant tout appel réseau.
+      2. Toujours valider `if (!res.ok) return;` avant de parser le flux JSON (`SyntaxError: Unexpected end of JSON input`).
+      3. Côté Backend Rust : lancer toutes les mesures de latence en parallèle avec `tokio::spawn` et des timeouts très stricts (`tokio::time::timeout(Duration::from_millis(350), ...)`). Zéro appel bloquant à `ping` ou sous-processus synchrone.
+
 ### C. Gestion des Médias & Authentification
 6. **Streaming média (Lecteurs Audio, Vidéo, Visionneuse) :**
    - *Erreur passée* : Les balises natives `<audio>`, `<video>` et `<img>` n'envoient pas les en-têtes HTTP `Authorization: Bearer ...`.
