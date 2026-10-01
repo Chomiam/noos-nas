@@ -578,8 +578,36 @@ fn resolve_and_activate_block_device(clean_dev: &str, req: &MountRequest) -> Res
   ```
 - **Définition cohérente du port par défaut (`default_port`)** :
   - Dans `manifest.json` et `store.json`, `default_port` doit toujours correspondre au port de l'interface utilisateur accessible dans le navigateur web (ex: `3000` pour AdGuard Home, et NON le port DNS `53`).
-- **Synchronisation immédiate sur GitHub** :
-  - Tout ajout ou modification dans `/home/chomiam/Projects/steveos_nas_store` doit faire l'objet d'un commit conventionnel et d'un push direct sur la branche `main` (`origin/main`), car le dashboard Web télécharge les templates bruts directement depuis GitHub (`raw.githubusercontent.com`).
+---
+
+### Moteur de Tâches Asynchrones Persistantes, Dissolution & Assemblage RAID avec Reprise sur Reboot :
+- **Problématique & Besoin métier** :
+  - La dissolution (« casser ») ou la création (« assembler ») d'une grappe RAID sont des opérations longues et critiques (démontage, wipefs, formatage, synchronisation mdadm/LVM).
+  - Ces opérations ne doivent JAMAIS dépendre d'une connexion HTTP synchrone (timeout navigateur, coupure réseau, fermeture de session).
+  - En cas de coupure électrique, redémarrage du NAS ou mise à jour système NixOS en plein milieu d'une opération, l'action doit **reprendre automatiquement là où elle s'est arrêtée** sans abandonner le stockage dans un état inconsistant.
+- **Architecture de Persistance & Machine à États Finis (`StorageJob`)** :
+  - **Fichier d'état sur disque** : `/var/lib/steveos/storage_jobs.json` (persistant à travers les boots et les mises à jour NixOS).
+  - **Modèle `StorageJob`** : stocke `id`, `job_type` (`destroy_raid` ou `create_raid`), `status` (`running`, `resumed`, `completed`, `failed`), `current_step`, `total_steps`, `progress_percent`, `step_name`, `step_detail`, disques cibles et paramètres.
+  - **Machine à états pour la Dissolution (`destroy_raid`)** :
+    1. *Étape 1 (15%)* : Vérification sécurité (`is_system_device`) & Démontage forcé propre (`umount -f`).
+    2. *Étape 2 (30%)* : Nettoyage déclaratif des points de montage (`mounts.json`).
+    3. *Étape 3 (55%)* : Suppression logique (`lvremove`/`vgremove` LVM2 ou `mdadm --stop`).
+    4. *Étape 4 (75%)* : Nettoyage métadonnées physiques (`pvremove -y -ff` ou `mdadm --zero-superblock --force`).
+    5. *Étape 5 (90%)* : Effacement bas niveau des signatures (`wipefs -a -f`).
+    6. *Étape 6 (100%)* : Synchronisation du système de blocs (`vgmknodes`, `udevadm settle`).
+  - **Machine à états pour l'Assemblage (`create_raid`)** :
+    1. *Étape 1 (15%)* : Nettoyage préliminaire des disques (`umount`, `wipefs`, `zero-superblock`).
+    2. *Étape 2 (40%)* : Chargement modules noyau (`modprobe raid*`) et création grappe (`mdadm --create --run`).
+    3. *Étape 3 (65%)* : Attente stabilisation et formatage filesystem (`mkfs.ext4`, `mkfs.btrfs` ou `mkfs.xfs`).
+    4. *Étape 4 (85%)* : Montage (`mkdir -p`, `mount`) et configuration des droits (`chown`, `chmod 2775`).
+    5. *Étape 5 (100%)* : Inscription déclarative (`mounts.json`) et synchronisation udev.
+- **Reprise Idempotente au Démarrage (`init_storage_tasks_tracker`)** :
+  - Appelé au lancement de `main.rs` : si une tâche `running` ou `resumed` est trouvée dans `storage_jobs.json`, elle est marquée `resumed` et un worker de reprise est détaché immédiatement en tâche de fond.
+  - Chaque étape est testée de manière idempotente (ne plante pas si une ressource a déjà été supprimée ou formatée avant la coupure).
+- **Double Feedback Visuel Temps Réel (Catppuccin Mocha)** :
+  - **Toast flottant persistant en bas d'écran (`#storage-floating-toast`)** : visible sur tous les onglets du NAS, avec jauge animée en pourcentage, icône active (`🧨` pulsant ou `🛠️` rotatif), phase courante et bouton direct d'accès vers Stockage.
+  - **Panneau dédié dans l'onglet Stockage (`#storage-raid-job-panel`)** : stepper visuel des étapes franchies (✔) et en cours (⏳), détails des disques cibles et statut de reprise.
+  - **Sondage dynamique & Détection au boot** : appel automatique de `checkActiveStorageJobOnLoad()` au chargement du Dashboard pour afficher instantanément la progression sans manipulation utilisateur.
 
 ---
 
