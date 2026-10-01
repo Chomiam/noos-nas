@@ -29,6 +29,10 @@
     defaultLocale = vars.defaultLocale;
     stateVersion = vars.stateVersion;
 
+    boot = {
+      kernel = vars.kernel or "lts";
+    };
+
     keyboard = {
       layout = vars.keyboard.layout or "fr";
       variant = vars.keyboard.variant or "";

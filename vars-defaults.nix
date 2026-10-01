@@ -54,6 +54,13 @@
   # Profil énergétique processeur serveur ("powersave", "schedutil", "performance")
   cpuGovernor = "powersave";
 
+  # 🐧 Noyau Linux (Kernel)
+  # - "lts"     : Linux 6.12 LTS (Recommandé NAS : stabilité maximale, compatibilité ZFS/Btrfs et Docker)
+  # - "6_6"     : Linux 6.6 LTS
+  # - "latest"  : Dernier noyau stable disponible
+  # - "default" : Noyau standard Nixpkgs
+  kernel = "lts";
+
   # 🛡️ Pare-feu & Sécurité
   firewall = {
     enable = true;

@@ -275,6 +275,18 @@ pub fn interpolate_pwm(temp: f32, curve: &[CurvePoint]) -> u8 {
 
 ---
 
+### Noyau Linux LTS & Stabilité Système pour NAS (NixOS) :
+- **Pourquoi le noyau rolling standard (6.18+) est inadapté pour un NAS de stockage** :
+  - Les versions intermédiaires ou très récentes du noyau Linux changent fréquemment les ABI internes, créant des ruptures de compatibilité avec OpenZFS (`zfs.latestCompatibleLinuxPackages`), les modules DKMS out-of-tree (pilotes Nvidia, interfaces réseau Realtek/Intel multi-gigabit), et tombent en fin de vie (EOL) en quelques mois.
+  - Pour un serveur NAS, la priorité absolue est la stabilité pérenne du stockage, de la pile réseau et de la couche de conteneurisation Docker.
+- **Architecture adoptée dans STEvE_OS** :
+  - Déclaration de l'option `steveos.boot.kernel` dans `modules/options.nix` (valeur par défaut : `"lts"`).
+  - Module dédié `modules/core/kernel.nix` assignant `boot.kernelPackages = pkgs.linuxPackages_6_12;` par défaut via `mkDefault`.
+  - Contrôle utilisateur centralisé via `vars.nix` (`kernel = "lts"`), documenté dans `vars-defaults.nix`.
+  - Support de branches alternatives si nécessaire (`"6_6"`, `"latest"`, `"default"`).
+
+---
+
 ## 🔄 4. Protocole d'Actualisation Continue de ce Fichier
 
 À chaque fois qu'un bogue est résolu, qu'un écueil est identifié ou qu'une nouvelle architecture est introduite :

@@ -28,6 +28,14 @@ with lib;
       description = "Version d'état NixOS";
     };
 
+    boot = {
+      kernel = mkOption {
+        type = types.enum [ "lts" "6_12" "6_6" "latest" "default" ];
+        default = "lts";
+        description = "Branche du noyau Linux (lts = Linux 6.12 LTS recommandé pour la stabilité maximale d'un NAS, 6_6, latest, default)";
+      };
+    };
+
     keyboard = {
       layout = mkOption { type = types.str; default = "fr"; };
       variant = mkOption { type = types.str; default = ""; };

@@ -29,6 +29,13 @@
   nvidiaLegacyBranch = "470"; # "470" (recommandé Kepler/GTX 600-700-800) ou "390"
   enableHardwareCodecs = true;
 
+  # Noyau Linux pour le NAS :
+  # - "lts"     : Linux 6.12 LTS (Recommandé NAS : stabilité maximale, compatibilité ZFS/Btrfs et Docker)
+  # - "6_6"     : Linux 6.6 LTS
+  # - "latest"  : Dernier noyau stable disponible
+  # - "default" : Noyau par défaut Nixpkgs
+  kernel = "lts";
+
   # Sécurité et pare-feu
   firewall = {
     enable = true;
