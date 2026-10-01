@@ -413,12 +413,19 @@ fn resolve_and_activate_block_device(clean_dev: &str, req: &MountRequest) -> Res
 
 ---
 
-### Périphériques Amovibles & Éjection Sécurisée (USB, SSD Externes, Lecteurs Optiques) :
-- **Intégration NixOS Udisks2** :
-  - Déclaration de `services.udisks2.enable = true;` dans `modules/storage/default.nix` complété par `parted`, `eject`, `dosfstools`, `exfatprogs`, `ntfs3g`, `udisks2`.
+### Périphériques Amovibles, Automounting & Éjection Sécurisée (USB, SSD Externes, Lecteurs Optiques) :
+- **Intégration NixOS Udisks2 & Devmon** :
+  - Déclaration de `services.udisks2.enable = true;` et `services.devmon.enable = true;` dans `modules/storage/default.nix` complété par `parted`, `eject`, `dosfstools`, `exfatprogs`, `ntfs3g`, `udisks2`.
+  - `udisks2` seul fournit l'API D-Bus sans monter automatiquement les médias à l'insertion. L'activation de `services.devmon.enable = true;` assure le montage automatique transparent sous `/media/`.
   - Conforme à la Règle n°2 de discernement : outils CLI purs sans dépendance `nix-ld`.
 - **Scan consolidé (`scan_removable_devices`)** :
   - Filtrage `lsblk -b --json` sur `tran == "usb"`, `rm == true`, `hotplug == true` et les lecteurs optiques (`type == "rom"` ou nom `sr*`).
+- **Modale de Montage Dédiée & Permissions Non-POSIX (exFAT, FAT32, NTFS)** :
+  - Pour les périphériques démontés ou dont le montage automatique a échoué, modale `#modal-mount-removable` intuitive avec suggestion automatique de `/media/<LABEL>` ou `/media/<NOM>`.
+  - **Piège critique des systèmes de fichiers non-POSIX** : sur FAT32/exFAT/NTFS, `chown` échoue silencieusement. Le backend Rust résout l'UID de l'utilisateur principal et le GID du groupe `storage`, injectant automatiquement `uid=...,gid=...,dmask=0002,fmask=0113` pour garantir un accès en lecture et écriture sans blocage root.
+  - Option de persistance désactivée par défaut pour éviter de polluer `mounts.json` avec des clés USB temporaires.
+- **Accès Fichiers 1-Clic (`openFilesAtPath`)** :
+  - Navigation instantanée vers `#files` avec mémorisation du chemin actif pour parcourir les dossiers du média amovible.
 - **Éjection physique et logicielle propre** :
   - Synchronisation des buffers (`sync`), démontage de toutes les partitions associées (`umount -f`).
   - Pour les lecteurs optiques : ouverture mécanique du tiroir via `eject <dev>`.

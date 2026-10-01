@@ -10,6 +10,7 @@
 
   # Service de gestion et montage automatique des périphériques amovibles (USB, disques externes, lecteurs optiques)
   services.udisks2.enable = true;
+  services.devmon.enable = true;
 
   # Utilitaires de partitionnement et gestion des systèmes de fichiers
   environment.systemPackages = with pkgs; [
