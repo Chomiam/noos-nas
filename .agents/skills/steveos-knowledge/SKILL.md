@@ -95,6 +95,15 @@ Ce guide regroupe les apprentissages essentiels, l'architecture des dépôts, le
       - Élever impérativement `#toast-container` et tous les toasts flottants au premier plan absolu (`z-index: 100050 !important;`).
       - Définir `pointer-events: none;` sur `#toast-container` et `pointer-events: auto;` sur les cartes `.toast` individuelles afin d'éviter qu'une zone invisible vide ne bloque les clics sur l'interface sous-jacente.
 
+12. **Bulle flottante de progression des mises à jour & Auto-dismiss (10s) :**
+    - *Erreur passée* : Afficher un toast flottant persistant lors d'une tâche asynchrone (ex: mise à jour système NixOS) sans jamais programmer son masquage automatique lors de la complétion (`stage === "completed"`), et sans horodatage de fin dans le backend.
+    - *Impact* : La bulle restait affichée indéfiniment en bas d'écran (avec un ancien libellé de compilation ou un statut achevé), obligeant l'utilisateur à chercher et cliquer manuellement sur la croix de fermeture `✕`. De plus, tout rechargement de page réaffichait la bulle indéfiniment tant qu'elle n'avait pas été expressément fermée.
+    - *Règle* :
+      - Enregistrer un horodatage UNIX `completed_timestamp` côté backend dès le passage à l'état `completed`.
+      - Côté frontend, dès détection de l'état `completed`, basculer immédiatement le titre en confirmation claire (*"Mise à jour terminée avec succès !"*), passer la barre à 100% avec gradient vert, et armer un timer d'extinction automatique (`scheduleUpdateToastDismiss(10000)`).
+      - Animer la sortie avec une classe CSS de fade-out et translation (`.toast-fading-out`) avant le masquage définitif (`display: none`).
+      - Lors du rechargement de page (`checkInitialUpdateProgress`), calculer le delta de temps écoulé : masquer et purger immédiatement si plus de 10s se sont écoulées, ou planifier le masquage pour le temps restant.
+
 ### C. Gestion des Médias & Authentification
 6. **Streaming média (Lecteurs Audio, Vidéo, Visionneuse) :**
    - *Erreur passée* : Les balises natives `<audio>`, `<video>` et `<img>` n'envoient pas les en-têtes HTTP `Authorization: Bearer ...`.
