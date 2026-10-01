@@ -7,5 +7,6 @@
     ./users.nix
     ./security.nix
     ./firewall.nix
+    ./dns.nix
   ];
 }

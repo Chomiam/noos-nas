@@ -1,0 +1,14 @@
+{
+  "mode": "cloudflare",
+  "primary_servers": [
+    "1.1.1.1",
+    "1.0.0.1"
+  ],
+  "custom_servers": [],
+  "fallback_servers": [
+    "1.1.1.1",
+    "9.9.9.9"
+  ],
+  "free_port_53": true,
+  "updated_at": "2026-10-01T09:40:00Z"
+}

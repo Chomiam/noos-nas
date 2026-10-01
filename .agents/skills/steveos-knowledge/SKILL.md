@@ -434,6 +434,24 @@ fn resolve_and_activate_block_device(clean_dev: &str, req: &MountRequest) -> Res
 
 ---
 
+### Gestion Déclarative du DNS, Libération du Port 53 & Fallbacks Anti-Coupure (`dns.json` + `dns.nix`) :
+- **Architecture de Passerelle Déclarative (`dns.json` -> `modules/core/dns.nix`)** :
+  - Le Dashboard Web applique le changement DNS à chaud (runtime `/etc/resolv.conf`) et persiste la sélection dans `dns.json`.
+  - Le module NixOS `modules/core/dns.nix` lit `dns.json` et configure déclarativement `networking.nameservers`.
+- **Résolution définitive du conflit sur le port 53 (AdGuard Home / Pi-hole)** :
+  - *Piège historique* : `systemd-resolved` écoute par défaut sur `127.0.0.53:53`, ce qui empêche Docker de lier `0.0.0.0:53` lors du déploiement d'AdGuard Home ou Pi-hole (`address already in use`).
+  - *Syntaxe moderne Nixpkgs (24.11+)* : Ne plus utiliser `services.resolved.extraConfig` (déprécié), utiliser impérativement :
+    ```nix
+    services.resolved.settings.Resolve.DNSStubListener = "no";
+    ```
+- **Règle absolue du Fallback DNS Anti-Coupure** :
+  - En cas d'utilisation d'un DNS personnalisé local (conteneur AdGuard ou Pi-hole sur `127.0.0.1` ou IP LAN), TOUJOURS adjoindre un ou deux serveurs de secours distants stables (Cloudflare `1.1.1.1` et Quad9 `9.9.9.9`).
+  - Cela évite toute perte de connectivité Internet sur le NAS (mises à jour, git, nixpkgs) en cas d'arrêt, de redémarrage ou de crash du conteneur DNS.
+- **Mesure de Latence Ping en Direct** :
+  - Probe TCP rapide sur le port 53 avec fallback ICMP ping pour afficher la latence réelle de chaque résolveur (Cloudflare, Quad9, AdGuard DNS, Google, Mullvad) dans l'interface Catppuccin Mocha.
+
+---
+
 ## 🔄 4. Protocole d'Actualisation Continue de ce Fichier
 
 À chaque fois qu'un bogue est résolu, qu'un écueil est identifié ou qu'une nouvelle architecture est introduite :
