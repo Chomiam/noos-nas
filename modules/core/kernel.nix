@@ -8,7 +8,9 @@ in
 {
   config = {
     boot.kernelPackages = mkDefault (
-      if cfg.kernel == "lts" || cfg.kernel == "6_12" then
+      if cfg.kernel == "lts" || cfg.kernel == "default" then
+        pkgs.linuxPackages
+      else if cfg.kernel == "6_12" then
         pkgs.linuxPackages_6_12
       else if cfg.kernel == "6_6" then
         pkgs.linuxPackages_6_6

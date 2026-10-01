@@ -32,7 +32,7 @@ with lib;
       kernel = mkOption {
         type = types.enum [ "lts" "6_12" "6_6" "latest" "default" ];
         default = "lts";
-        description = "Branche du noyau Linux (lts = Linux 6.12 LTS recommandé pour la stabilité maximale d'un NAS, 6_6, latest, default)";
+        description = "Branche du noyau Linux pour le NAS (lts = dernier noyau stable LTS NixOS en permanence [actuellement 6.18], 6_12, 6_6, latest = noyau amont rolling [7.x])";
       };
     };
 

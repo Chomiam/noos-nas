@@ -30,9 +30,10 @@
   enableHardwareCodecs = true;
 
   # Noyau Linux pour le NAS :
-  # - "lts"     : Linux 6.12 LTS (Recommandé NAS : stabilité maximale, compatibilité ZFS/Btrfs et Docker)
-  # - "6_6"     : Linux 6.6 LTS
-  # - "latest"  : Dernier noyau stable disponible
+  # - "lts"     : Dernier noyau stable LTS NixOS (actuellement 6.18 - Recommandé NAS : stabilité maximale en continu, ZFS, Docker, réseau)
+  # - "6_12"    : Linux 6.12 LTS (épinglé)
+  # - "6_6"     : Linux 6.6 LTS (épinglé)
+  # - "latest"  : Dernier noyau amont de pointe (Linux 7.x)
   # - "default" : Noyau par défaut Nixpkgs
   kernel = "lts";
 
