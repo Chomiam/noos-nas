@@ -340,6 +340,27 @@ Ce guide regroupe les apprentissages essentiels, l'architecture des dépôts, le
          - Seuls ces codes justifient l'état `s.status = "error"` et le bouton d'inspection des logs de crash.
       3. **Délai de grâce généreux (`-t 30`)** : Toujours allouer au moins 25 à 30 secondes (`docker stop -t 30 <container>` et `docker restart -t 30 <container>`) aux commandes d'arrêt et redémarrage de serveurs de jeu afin de laisser le temps aux moteurs de jeu d'achever la synchronisation sur disque sans subir un SIGKILL prématuré.
 
+30. **Cycle de vie et suppression robuste des comptes utilisateurs Linux/Samba (Verrous userdel, sessions résiduelles & compte principal) :**
+    - *Erreurs passées* :
+      1. Utiliser `userdel` sans l'option `-f` (force). Dès qu'un utilisateur possède un processus actif, une session SSH ouverte, ou une tranche systemd (`user-<uid>.slice`), `userdel` échoue avec l'erreur `userdel: user <user> is currently used by process <PID>` (code 8).
+      2. Traiter le code de retour 6 (`user does not exist`) comme une défaillance critique et bloquer la purge de `users-registry.json`. Si le compte était déjà absent de `/etc/passwd` ou purement virtuel dans le registre, la modale de suppression échouait en boucle sans jamais retirer l'utilisateur.
+      3. Utiliser l'argument `-r` de `userdel` qui échoue de manière bloquante (code 12) si des fichiers appartenant à un tiers (fichiers root créés par des conteneurs, montages) se trouvent dans `/home/<user>`.
+      4. Omettre l'état de chargement (`disabled`, spinner) sur le bouton "Confirmer la Suppression" du modal, ne fournissant aucun retour visuel pendant les opérations système.
+    - *Règles & Patterns éprouvés* :
+      1. **Purge préalable des processus & sessions** :
+         - Toujours exécuter `loginctl terminate-user <username>` et `pkill -9 -u <username>` suivi d'un bref délai d'attente (150ms) pour libérer les verrous sur `/etc/passwd` et les descripteurs de fichiers avant d'appeler `userdel`.
+      2. **Forçage `userdel -f` et tolérance de non-existence (Code 6)** :
+         - Utiliser `userdel -f <username>` pour forcer la suppression même si des résidus de session persistent.
+         - Considérer les codes 0 (succès) et 6 (`user does not exist`) comme une validation de sortie : dans les deux cas, le compte est garanti absent de `/etc/passwd`.
+      3. **Suppression indépendante des répertoires hôtes** :
+         - Supprimer `/home/<username>` et `/mnt/storage/shares/<username>` via des commandes `rm -rf` et `std::fs::remove_dir_all` dédiées plutôt que de faire dépendre le succès global de l'option `-r` de `userdel`.
+      4. **Nettoyage Samba complet** :
+         - Exécuter à la fois `smbpasswd -x <username>` et `pdbedit -x -u <username>`.
+      5. **Immunité du compte administrateur principal** :
+         - Protéger le compte principal déclaré dans `vars.nix` (`STEVEOS_USER`) contre toute tentative de suppression avec le même statut immuable que `root` (`🔒 Immuable` dans l'interface et blocage 400 dans l'API).
+      6. **Gestion d'état UI au clic** :
+         - Désactiver le bouton de confirmation, afficher `⏳ Suppression en cours...`, encoder l'URL (`encodeURIComponent`), et parser la réponse avec gestion de repli en cas de code HTTP d'erreur.
+
 ---
 
 
