@@ -173,7 +173,13 @@ Ce guide regroupe les apprentissages essentiels, l'architecture des dépôts, le
       1. Utiliser impérativement `src="about:blank"` pour tout `<iframe>` non initialisé.
       2. Fournir un fichier natif `/favicon.ico` à la racine pour éviter que le navigateur ne tourne en boucle sur une erreur 404.
       3. Toujours déclarer `preload="none"` sur les balises `<video>` et `<audio>` tant qu'aucun média n'est chargé, et ne jamais y placer `autoplay` dans le HTML initial.
-      4. Rendre le chargement des polices web CDN non-bloquant (`media="print" onload="this.media='all'"`) avec repli direct sur les polices système locales.
+13. **Désynchronisation de `flake.lock` entre le Dashboard et la configuration de l'OS (`noos-nas`) :**
+    - *Erreur passée* : Développer une nouvelle version du Dashboard (`noos-nas-dashboard`), attendre le succès du workflow GitHub Actions Cachix, mais omettre de propager le hash mis à jour dans `flake.lock` de la configuration de l'OS (`noos-nas`).
+    - *Impact* : Sur le NAS de l'utilisateur, le processus de mise à jour s'exécute sans erreur (`Code 0`) car `nixos-rebuild switch` applique fidèlement la configuration déclarative existante, mais le dashboard redémarre sur l'ancienne version car `flake.lock` était resté figé sur l'ancien commit.
+    - *Règles & Triple Verrou* :
+      1. **Script de release automatisé** : Toujours utiliser [`scripts/release.sh`](file:///home/chomiam/Projects/steveos-nas-dashboard/scripts/release.sh) qui enchaîne automatiquement la compilation Cachix et la mise à jour de `flake.lock` dans `../steveos-nas` suivi de son push sur `main`.
+      2. **Résilience proactive du Dashboard** : Dans `src/updates.rs`, exécuter systématiquement `nix flake lock --update-input noos-nas-dashboard` avant `nixos-rebuild switch` dès qu'une mise à niveau du dashboard est signalée.
+      3. **Télémétrie explicite** : Présenter dans l'interface la version active, la version verrouillée par l'OS et la dernière version disponible sur GitHub.
 
 ---
 
@@ -407,6 +413,42 @@ Ce guide regroupe les apprentissages essentiels, l'architecture des dépôts, le
       1. **Isolation par délimiteur `%`** : Toujours cibler le token précédant le délimiteur `%` : `line.split('%').next().and_then(|s| s.split_whitespace().last())`.
       2. **Scan rétrograde des périphériques `md*`** : Parcourir les lignes antérieures en boucle inversée (`lines[..idx].iter().rev()`) jusqu'à rencontrer un entête `md* :` valide.
       3. **Unicode natif dans le DOM** : Dans `textContent`, employer directement le caractère `•` plutôt que l'entité HTML `&bull;`.
+
+33. **Isolation Stricte des Routes WebSocket VNC & Rejet des Filtres Permissifs `path.ends_with(...)` :**
+    - *Erreur passée* : Déclarer `path.ends_with("/vnc")` dans les exemptions d'authentification de `auth_middleware` pour faire fonctionner la console VNC des machines virtuelles.
+    - *Impact* : Toute personne sur le LAN pouvait se connecter directement au websocket VNC (`/api/vms/:name/vnc`) de n'importe quelle VM sans authentification. De plus, `ends_with` pouvait être exploité sur d'autres endpoints.
+    - *Règle* :
+      1. Remplacer les filtres `ends_with` par des comparaisons strictes d'URL (`path == "/api/auth/login"`, `path == "/api/auth/status"`).
+      2. Protéger impérativement les connexions WebSocket VNC par token de session transmis lors de l'établissement du handshake (`?token=...` ou cookie de session).
+
+34. **Contrôle d'Accès Basé sur les Rôles (RBAC) & Exigence Systématique `session.is_admin` :**
+    - *Erreur passée* : Valider uniquement la validité temporelle du token dans `auth_middleware` sans vérifier `session.is_admin` sur les endpoints destructifs ou sensibles (terminal, disques, formats, arrêt système, modification de fichiers, pare-feu).
+    - *Impact* : Tout compte utilisateur secondaire créé pour un simple partage Samba ou sFTP pouvait appeler l'API de terminal (`/api/terminal/exec`) ou de formatage de disques et agir comme root.
+    - *Règle* :
+      1. Toute route permettant l'exécution de commandes, la modification de fichiers hors de son home, la gestion du stockage, la reconfiguration réseau/pare-feu ou les actions d'alimentation système DOIT impérativement exiger que `session.is_admin == true`.
+      2. Renvoyer immédiatement un statut HTTP `403 Forbidden` (`{"success": false, "error": "Accès refusé. Privilèges administrateur requis."}`) si l'utilisateur n'est pas administrateur.
+
+35. **Bannissement Absolu des Interpolations Shell (`bash -c "echo '...'"` & `sh -c`) :**
+    - *Erreur passée* : Utiliser `Command::new("sudo").args(["bash", "-c", &format!("echo '{}' > /etc/resolv.conf", resolv_content)])` dans `src/dns.rs` ou `sh -c "echo '{}'"` dans `src/games.rs`.
+    - *Impact* : Une entrée utilisateur contenant une simple apostrophe ou des métacaractères shell (`'`, `;`, `$()`) provoque une exécution de commande arbitraire avec les privilèges root.
+    - *Règle* :
+      1. Ne JAMAIS construire de commande shell via formatage de chaîne ou interpolation d'arguments non assainis.
+      2. Toujours utiliser les APIs natives Rust de manipulation de fichiers (`std::fs::write`, `std::fs::OpenOptions`).
+      3. Valider strictement les entrées réseau (IPs avec `IpAddr::from_str`, ports dans `1..=65535`).
+
+36. **Incompatibilité Structurelle entre Droits de Stockage (`chmod 2775`) et Chroot sFTP OpenSSH :**
+    - *Erreur passée* : Déclarer `ChrootDirectory /storage/data` dans OpenSSH pour un partage sFTP, alors que le dossier a été configuré par le module de stockage avec `chown <user>:storage` et `chmod 2775`.
+    - *Impact* : Le démon `sshd` refuse immédiatement toute connexion sFTP avec l'erreur système critique `fatal: bad ownership or modes for chroot directory`. OpenSSH exige que TOUS les dossiers de l'arborescence menant au chroot appartiennent strictement à `root:root` et soient interdits d'écriture aux groupes (`chmod 755` max).
+    - *Règle* :
+      1. Ne jamais chrooter directement sur un point de montage multi-utilisateurs modifiable par le groupe `storage`.
+      2. Pour un chroot sFTP sécurisé, créer une arborescence dédiée `/mnt/storage/sftp_jails/<user>` appartenant à `root:root` (`0755`), et monter ou lier le dossier de travail inscriptible dans un sous-répertoire `/mnt/storage/sftp_jails/<user>/data` appartenant à `<user>:storage`.
+
+37. **Intégrité des Déclarations JS Globales, Déduplication et Piège du Hoisting (`escapeHtml`) :**
+    - *Erreur passée* : Déclarer `function escapeHtml(str)` une première fois de manière sécurisée (avec garde `if (!str) return ""`), puis la redéclarer plus loin dans le fichier sans cette garde.
+    - *Impact* : En JavaScript, le mécanisme de hoisting fait écraser la première définition par la seconde dans tout le script. Tout appel à `escapeHtml(null)` ou `escapeHtml(undefined)` provoque alors un plantage immédiat `TypeError: Cannot read properties of undefined (reading 'replace')`.
+    - *Règle* :
+      1. Toujours tester l'absence de fonctions dupliquées via un linter ou un script d'audit AST avant toute release.
+      2. Déclarer systématiquement les variables avec `let` ou `const` pour éviter toute pollution du scope global `window`.
 
 ---
 
