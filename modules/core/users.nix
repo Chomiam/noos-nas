@@ -107,14 +107,14 @@ in
                "${u.homeDirectory}/musique" \
                "${u.homeDirectory}/telechargements"
 
-    # Propriété déclarative de /mnt et de ses montages pour l'utilisateur et le groupe storage (setgid 2775)
-    mkdir -p /mnt /mnt/storage /mnt/storage/shares /mnt/storage/media /mnt/storage/sftp /mnt/storage/games
-    chown ${u.username}:storage /mnt
-    chmod 2775 /mnt
+    # Propriété déclarative de /mnt pour l'utilisateur et le groupe storage (setgid 2775)
+    mkdir -p /mnt /mnt/storage
+    chown ${u.username}:storage /mnt 2>/dev/null || true
+    chmod 2775 /mnt 2>/dev/null || true
     for d in /mnt/*; do
       if [ -d "$d" ]; then
-        chown ${u.username}:storage "$d"
-        chmod 2775 "$d"
+        chown ${u.username}:storage "$d" 2>/dev/null || true
+        chmod 2775 "$d" 2>/dev/null || true
       fi
     done
   '';
@@ -203,8 +203,6 @@ in
   systemd.tmpfiles.rules = [
     "d /var/lib/steveos 0750 root wheel - -"
     "d /etc/nixos 0775 ${u.username} users - -"
-    "d /mnt/storage/games 2775 ${u.username} storage - -"
-    "d /mnt/storage/shares 2775 ${u.username} storage - -"
     "d /home 0755 ${u.username} users - -"
     "z /home 0755 ${u.username} users - -"
     "d ${u.homeDirectory} 0755 ${u.username} users - -"

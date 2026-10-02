@@ -12,11 +12,13 @@ let
   filteredJsonMounts = builtins.filter (m: !(builtins.elem m.mountPoint varsMountPoints)) activeMounts;
 in
 {
-  # 1. Déclaration automatique des systèmes de fichiers durables
+  # 1. Déclaration automatique des systèmes de fichiers durables (priorité absolue au chemin UUID persistant)
   fileSystems = lib.listToAttrs (map (m: {
     name = m.mountPoint;
     value = {
-      device = m.device;
+      device = if (m ? deviceUuid && m.deviceUuid != null && m.deviceUuid != "")
+               then "/dev/disk/by-uuid/${m.deviceUuid}"
+               else m.device;
       fsType = m.fsType or "auto";
       options = if (m ? options && m.options != [] && m.options != null)
                 then m.options

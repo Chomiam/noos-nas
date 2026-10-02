@@ -33,12 +33,6 @@
     "z /mnt 2775 ${u} storage -"
     "d /mnt/storage 2775 ${u} storage -"
     "z /mnt/storage 2775 ${u} storage -"
-    "d /mnt/storage/shares 2775 ${u} storage -"
-    "z /mnt/storage/shares 2775 ${u} storage -"
-    "d /mnt/storage/media 2775 ${u} storage -"
-    "z /mnt/storage/media 2775 ${u} storage -"
-    "d /mnt/storage/sftp 2775 ${u} storage -"
-    "z /mnt/storage/sftp 2775 ${u} storage -"
   ];
 
   # Service de garantie déclarative des permissions sur tous les montages sous /mnt
@@ -51,13 +45,20 @@
       RemainAfterExit = true;
       ExecStart = pkgs.writeShellScript "ensure-mnt-permissions" ''
         USER="${config.steveos.user.username}"
+        if ! id "$USER" >/dev/null 2>&1; then
+          USER=$(awk -F: '$3 >= 1000 && $3 < 60000 && $1 != "nobody" {print $1; exit}' /etc/passwd 2>/dev/null || echo "root")
+        fi
+        GRP="storage"
+        if ! getent group "$GRP" >/dev/null 2>&1; then
+          GRP="users"
+        fi
         if [ -d /mnt ]; then
-          chown "$USER:storage" /mnt
-          chmod 2775 /mnt
+          chown "$USER:$GRP" /mnt 2>/dev/null || true
+          chmod 2775 /mnt 2>/dev/null || true
           for mount_dir in /mnt/*; do
             if [ -d "$mount_dir" ]; then
-              chown "$USER:storage" "$mount_dir"
-              chmod 2775 "$mount_dir"
+              chown "$USER:$GRP" "$mount_dir" 2>/dev/null || true
+              chmod 2775 "$mount_dir" 2>/dev/null || true
             fi
           done
         fi
