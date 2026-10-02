@@ -11,9 +11,10 @@
 
   outputs = { self, nixpkgs, ... }@inputs:
     let
-      # Fusion récursive des variables (defaults + user overrides)
+      # Fusion récursive des variables (defaults + repo vars + local vars prioritaires)
       defaults = import ./vars-defaults.nix;
-      userVars = import ./vars.nix;
+      repoVars = if builtins.pathExists ./vars.nix then import ./vars.nix else {};
+      localVars = if builtins.pathExists ./vars.local.nix then import ./vars.local.nix else {};
 
       recursiveMerge = base: override:
         builtins.mapAttrs (name: baseValue:
@@ -24,6 +25,7 @@
           else baseValue
         ) base // (builtins.removeAttrs override (builtins.attrNames base));
 
+      userVars = recursiveMerge repoVars localVars;
       baseVars = recursiveMerge defaults userVars;
 
       # Constructeur de système modulaire

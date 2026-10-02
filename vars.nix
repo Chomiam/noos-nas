@@ -13,10 +13,10 @@
   # Si non renseigné, le compte par défaut de vars-defaults.nix est utilisé.
   # =========================================================================
   # user = {
-  #   username = "chomiam";               # Votre identifiant de connexion (ex: "mow", "admin")
+  #   username = "admin";               # Votre identifiant de connexion (ex: "mow", "admin")
   #   fullName = "Administrateur NAS";    # Votre nom ou pseudonyme
-  #   homeDirectory = "/home/chomiam";    # /home/<username>
-  #   shell = "fish";                     # "fish" ou "bash"
+  #   homeDirectory = "/home/admin";    # /home/<username>
+  #   shell = "fish";                     # "bash" ou "fish"
   # };
 
   # Choix du GPU pour le transcodage matériel :

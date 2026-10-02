@@ -176,28 +176,37 @@ in
     done
   '';
 
-  # 🛡️ Sauvegarde permanente et résilience des fichiers spécifiques (vars.nix, hardware-configuration.nix)
+  # 🧹 Nettoyage automatique du compte orphelin 'chomiam' s'il a été créé par inadvertance
+  system.activationScripts.cleanupErroneousChomiam = lib.stringAfter [ "users" "groups" ] ''
+    if [ "${u.username}" != "chomiam" ] && id "chomiam" >/dev/null 2>&1; then
+      SHADOW_LINE=$(grep '^chomiam:' /etc/shadow 2>/dev/null || true)
+      if [[ "$SHADOW_LINE" == chomiam:!:* ]] || [[ "$SHADOW_LINE" == chomiam:*:* ]] || [[ "$SHADOW_LINE" == chomiam::* ]]; then
+        echo "🧹 Nettoyage automatique du compte résiduel 'chomiam'..."
+        ${pkgs.shadow}/bin/userdel -r chomiam 2>/dev/null || ${pkgs.shadow}/bin/userdel chomiam 2>/dev/null || true
+      fi
+    fi
+  '';
+
+  # 🛡️ Sauvegarde permanente et résilience des fichiers spécifiques (vars.nix, vars.local.nix, hardware-configuration.nix)
   system.activationScripts.etcNixosBackup = lib.stringAfter [ "users" "groups" ] ''
-    # 1. Sauvegarde et sécurisation de vars.nix
+    # 1. Sauvegarde et sécurisation de vars.nix et vars.local.nix
     if [ -f /etc/nixos/vars.nix ]; then
-      # Si vars.nix est corrompu par des marqueurs de conflit Git, restauration d'urgence
-      if grep -qE '^(<{7}|={7}|>{7})' /etc/nixos/vars.nix 2>/dev/null; then
-        if [ -f /etc/nixos/.vars.nix.backup ]; then
-          echo "⚠️ Conflit Git détecté dans vars.nix ! Restauration automatique depuis la sauvegarde locale..."
-          cp -f /etc/nixos/.vars.nix.backup /etc/nixos/vars.nix
-        fi
+      # Si vars.nix contient un utilisateur valide, synchroniser vars.local.nix (non suivi par Git)
+      if grep -qE '^\s*username\s*=' /etc/nixos/vars.nix 2>/dev/null; then
+        cp -f /etc/nixos/vars.nix /etc/nixos/vars.local.nix 2>/dev/null || true
+        chmod 0600 /etc/nixos/vars.local.nix 2>/dev/null || true
+        cp -f /etc/nixos/vars.nix /etc/nixos/.vars.nix.backup 2>/dev/null || true
+        chmod 0600 /etc/nixos/.vars.nix.backup 2>/dev/null || true
       fi
 
-      # Sauvegarde locale saine
-      if [ ! -f /etc/nixos/.vars.nix.backup ]; then
-        cp -f /etc/nixos/vars.nix /etc/nixos/.vars.nix.backup
-        chmod 0600 /etc/nixos/.vars.nix.backup
-      else
-        BACKUP_USER=$(grep -oP 'username\s*=\s*"\K[^"]+' /etc/nixos/.vars.nix.backup 2>/dev/null || true)
-        CURRENT_USER=$(grep -oP 'username\s*=\s*"\K[^"]+' /etc/nixos/vars.nix 2>/dev/null || true)
-        if [ -n "$CURRENT_USER" ] && { [ "$BACKUP_USER" = "$CURRENT_USER" ] || [ -z "$BACKUP_USER" ]; }; then
-          cp -f /etc/nixos/vars.nix /etc/nixos/.vars.nix.backup
-          chmod 0600 /etc/nixos/.vars.nix.backup
+      # Si vars.nix est corrompu par un conflit Git ou a perdu son bloc user, restauration d'urgence
+      if grep -qE '^(<{7}|={7}|>{7})' /etc/nixos/vars.nix 2>/dev/null || ! grep -qE '^\s*username\s*=' /etc/nixos/vars.nix 2>/dev/null; then
+        if [ -f /etc/nixos/vars.local.nix ] && grep -qE '^\s*username\s*=' /etc/nixos/vars.local.nix 2>/dev/null; then
+          echo "⚠️ Restauration automatique de vars.nix depuis vars.local.nix..."
+          cp -f /etc/nixos/vars.local.nix /etc/nixos/vars.nix
+        elif [ -f /etc/nixos/.vars.nix.backup ] && grep -qE '^\s*username\s*=' /etc/nixos/.vars.nix.backup 2>/dev/null; then
+          echo "⚠️ Restauration automatique de vars.nix depuis .vars.nix.backup..."
+          cp -f /etc/nixos/.vars.nix.backup /etc/nixos/vars.nix
         fi
       fi
     fi

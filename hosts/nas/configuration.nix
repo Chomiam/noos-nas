@@ -43,7 +43,7 @@
       username = vars.user.username;
       fullName = if (vars.user ? fullName && vars.user.fullName != null && vars.user.fullName != "")
                  then vars.user.fullName
-                 else (if vars.user.username == "chomiam" then "Axel Valens" else "Administrateur Noos");
+                 else "Administrateur Noos";
       homeDirectory = if (vars.user ? homeDirectory && vars.user.homeDirectory != null && vars.user.homeDirectory != "")
                       then vars.user.homeDirectory
                       else "/home/${vars.user.username}";

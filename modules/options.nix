@@ -47,15 +47,15 @@ with lib;
     };
 
     user = {
-      username = mkOption { type = types.str; default = "chomiam"; description = "Identifiant de l'administrateur principal"; };
-      fullName = mkOption { type = types.str; default = "Axel Valens"; description = "Nom complet de l'administrateur"; };
+      username = mkOption { type = types.str; default = "admin"; description = "Identifiant de l'administrateur principal"; };
+      fullName = mkOption { type = types.str; default = "Administrateur Noos"; description = "Nom complet de l'administrateur"; };
       homeDirectory = mkOption {
         type = types.str;
         default = "/home/${config.noos.user.username}";
         defaultText = lib.literalExpression ''"/home/${config.noos.user.username}"'';
         description = "Répertoire personnel de l'administrateur";
       };
-      shell = mkOption { type = types.str; default = "fish"; };
+      shell = mkOption { type = types.str; default = "bash"; };
       initialHashedPassword = mkOption { type = types.nullOr types.str; default = null; };
       extraGroups = mkOption { type = types.listOf types.str; default = [ "wheel" "video" "render" "storage" "docker" ]; };
       sshAuthorizedKeys = mkOption { type = types.listOf types.str; default = []; };

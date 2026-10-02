@@ -21,12 +21,12 @@
   # Version de l'état système NixOS
   stateVersion = "26.05";
 
-  # Utilisateur principal
+  # Utilisateur principal (défini lors de l'installation dans vars.nix ou vars.local.nix)
   user = {
-    username = "chomiam";
-    fullName = "Axel Valens";
+    username = "admin";
+    fullName = "Administrateur Noos";
     homeDirectory = null;
-    shell = "fish";
+    shell = "bash";
     initialHashedPassword = null;
     extraGroups = [
       "wheel"
