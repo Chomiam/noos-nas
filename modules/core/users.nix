@@ -163,17 +163,6 @@ in
     done
   '';
 
-  # 🧹 Nettoyage automatique du compte orphelin 'chomiam' s'il a été créé par inadvertance
-  system.activationScripts.cleanupErroneousChomiam = lib.stringAfter [ "users" "groups" ] ''
-    if [ "${u.username}" != "chomiam" ] && id "chomiam" >/dev/null 2>&1; then
-      SHADOW_LINE=$(grep '^chomiam:' /etc/shadow 2>/dev/null || true)
-      if [[ "$SHADOW_LINE" == chomiam:!:* ]] || [[ "$SHADOW_LINE" == chomiam:*:* ]] || [[ "$SHADOW_LINE" == chomiam::* ]]; then
-        echo "🧹 Nettoyage automatique du compte résiduel 'chomiam'..."
-        ${pkgs.shadow}/bin/userdel -r chomiam 2>/dev/null || ${pkgs.shadow}/bin/userdel chomiam 2>/dev/null || true
-      fi
-    fi
-  '';
-
   # 🛡️ Sauvegarde permanente et résilience des fichiers spécifiques (vars.nix, vars.local.nix, hardware-configuration.nix)
   system.activationScripts.etcNixosBackup = lib.stringAfter [ "users" "groups" ] ''
     # 1. Sauvegarde et sécurisation de vars.nix et vars.local.nix
