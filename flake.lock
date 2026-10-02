@@ -51,13 +51,13 @@
         "lastModified": 1790931723,
         "narHash": "sha256-Z1e28Icgwrw9Vkw8rBMuVljUXGKf9vCnmpyONgreIQ4=",
         "owner": "Chomiam",
-        "repo": "steveos-nas-dashboard",
+        "repo": "noos-nas-dashboard",
         "rev": "8ba93ecd5aace16fe656ae7da99b3b5613cfe4a9",
         "type": "github"
       },
       "original": {
         "owner": "Chomiam",
-        "repo": "steveos-nas-dashboard",
+        "repo": "noos-nas-dashboard",
         "type": "github"
       }
     },
