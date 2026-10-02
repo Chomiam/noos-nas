@@ -1,12 +1,16 @@
-{ lib, ... }:
+{ config, lib, ... }:
 
 with lib;
 
 {
-  options.steveos = {
+  imports = [
+    (lib.mkAliasOptionModule [ "steveos" ] [ "noos" ])
+  ];
+
+  options.noos = {
     hostName = mkOption {
       type = types.str;
-      default = "steveos-nas";
+      default = "noos-nas";
       description = "Nom d'hôte du NAS";
     };
 
@@ -47,8 +51,8 @@ with lib;
       fullName = mkOption { type = types.str; default = "Axel Valens"; description = "Nom complet de l'administrateur"; };
       homeDirectory = mkOption {
         type = types.str;
-        default = "/home/${config.steveos.user.username}";
-        defaultText = lib.literalExpression ''"/home/${config.steveos.user.username}"'';
+        default = "/home/${config.noos.user.username}";
+        defaultText = lib.literalExpression ''"/home/${config.noos.user.username}"'';
         description = "Répertoire personnel de l'administrateur";
       };
       shell = mkOption { type = types.str; default = "fish"; };
@@ -138,7 +142,7 @@ with lib;
       samba = {
         enable = mkOption { type = types.bool; default = true; };
         workgroup = mkOption { type = types.str; default = "WORKGROUP"; };
-        serverString = mkOption { type = types.str; default = "STEvE_OS NAS"; };
+        serverString = mkOption { type = types.str; default = "Noos NAS"; };
         guestAccess = mkOption { type = types.bool; default = false; };
         sharesPath = mkOption { type = types.str; default = "/mnt/storage/shares"; };
         wsdd = mkOption { type = types.bool; default = true; };

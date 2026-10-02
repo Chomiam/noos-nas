@@ -1,7 +1,7 @@
-# 🚀 STEvE_OS NAS Edition
+# 🚀 Noos NAS Edition
 
 Système d'exploitation modulaire pour NAS & Serveur de Stockage personnel, propulsé par **NixOS** et outillé en **Rust**.
-Directement inspiré de l'architecture déclarative de **ChomiamOS**, STEvE_OS NAS Edition est optimisé pour une disponibilité 24/7, une faible consommation électrique, un transcodage multimédia matériel performant et des partages réseau sécurisés.
+Directement inspiré de l'architecture déclarative de **ChomiamOS**, Noos NAS Edition est optimisé pour une disponibilité 24/7, une faible consommation électrique, un transcodage multimédia matériel performant et des partages réseau sécurisés.
 
 ---
 
@@ -21,7 +21,7 @@ Directement inspiré de l'architecture déclarative de **ChomiamOS**, STEvE_OS N
   - Mise en veille automatique des disques HDD rotatifs (`spindown.nix` via `hdparm`).
   - Surveillance continue de la santé des disques (`smartd.nix`).
   - Tâches de maintenance programmées (scrub Btrfs / trim ZFS).
-- **Outillage CLI 100% Rust (`steveos-cli`) :**
+- **Outillage CLI 100% Rust (`noos-cli`) :**
   - Outil natif en Rust pour diagnostiquer le NAS distant (`probe`), copier vos clés SSH (`copy-id`), inspecter l'évaluation NixOS (`status`) et déployer (`deploy`).
 
 ---
@@ -29,8 +29,8 @@ Directement inspiré de l'architecture déclarative de **ChomiamOS**, STEvE_OS N
 ## 🛠️ Structure du Projet
 
 ```text
-steveos-nas/
-├── flake.nix                       # Point d'entrée Flake (mkNasSystem + package steveos-cli)
+noos-nas/
+├── flake.nix                       # Point d'entrée Flake (mkNasSystem + package noos-cli)
 ├── flake.lock                      # Verrouillage reproductible des dépendances
 ├── vars.nix                        # Configuration utilisateur personnalisée
 ├── vars-defaults.nix               # Schéma de référence et valeurs par défaut
@@ -43,34 +43,34 @@ steveos-nas/
 │       └── storage.nix             # Montages et pools de stockage
 │
 ├── modules/
-│   ├── options.nix                 # Définition des options déclaratives (steveos.*)
+│   ├── options.nix                 # Définition des options déclaratives (noos.* (avec alias steveos.*))
 │   ├── core/                       # Nix, utilisateurs, sécurité, pare-feu modulaire
 │   ├── hardware/                   # Pilotes GPU, codecs VA-API/QSV, économie d'énergie
 │   ├── storage/                    # SMART, spindown, maintenance disques
 │   └── services/                   # Samba, NFS, sFTP, Docker, VPN (WireGuard), KVM, nix-ld
 │
 └── tools/
-    └── steveos-cli/                # 🦀 Outil d'administration natif en Rust
+    └── noos-cli/                # 🦀 Outil d'administration natif en Rust
         ├── Cargo.toml
         └── src/main.rs
 ```
 
 ---
 
-## 🚀 Utilisation avec l'Outil CLI en Rust (`steveos-cli`)
+## 🚀 Utilisation avec l'Outil CLI en Rust (`noos-cli`)
 
 Vous pouvez exécuter directement l'outil avec `nix run` :
 
 ```bash
 # 1. Copier votre clé SSH vers le NAS
-nix run .#steveos-cli -- copy-id chomiam@192.168.1.139
+nix run .#noos-cli -- copy-id chomiam@192.168.1.139
 
 # 2. Diagnostiquer le matériel distant (CPU, GPU, disques, OS actuel)
-nix run .#steveos-cli -- probe chomiam@192.168.1.139
+nix run .#noos-cli -- probe chomiam@192.168.1.139
 
 # 3. Vérifier les ports du pare-feu modulaire et le statut de la configuration locale
-nix run .#steveos-cli -- status
+nix run .#noos-cli -- status
 
-# 4. Déployer la configuration STEvE_OS sur le NAS distant
-nix run .#steveos-cli -- deploy chomiam@192.168.1.139
+# 4. Déployer la configuration Noos sur le NAS distant
+nix run .#noos-cli -- deploy chomiam@192.168.1.139
 ```

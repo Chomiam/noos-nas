@@ -1,11 +1,11 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.steveos.services.virtualisation;
-  u = config.steveos.user.username;
+  cfg = config.noos.services.virtualisation;
+  u = config.noos.user.username;
 in
 {
-  options.steveos.services.virtualisation = {
+  options.noos.services.virtualisation = {
     enable = lib.mkOption {
       type = lib.types.bool;
       default = true;

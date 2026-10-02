@@ -1,11 +1,11 @@
 {
   # =========================================================================
-  # ⚙️ VARIABLES PAR DÉFAUT : STEvE_OS NAS EDITION
+  # ⚙️ VARIABLES PAR DÉFAUT : NOOS NAS EDITION
   # Référence du schéma système pour NAS / Serveur de stockage
   # =========================================================================
 
   # Nom d'hôte de la machine (Hostname)
-  hostName = "steveos-nas";
+  hostName = "noos-nas";
 
   # Localisation & Fuseau horaire
   timeZone = "Europe/Paris";
@@ -104,7 +104,7 @@
 
   # 🌐 Services Réseau & Partages NAS
   services = {
-    # Tableau de bord web STEvE_OS
+    # Tableau de bord web Noos
     dashboard = {
       enable = true;
       port = 9339;
@@ -113,7 +113,7 @@
     samba = {
       enable = true;
       workgroup = "WORKGROUP";
-      serverString = "STEvE_OS NAS Edition";
+      serverString = "Noos NAS Edition";
       guestAccess = false;
       sharesPath = "/mnt/storage/shares";
       wsdd = true;

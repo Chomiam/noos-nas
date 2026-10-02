@@ -1,7 +1,7 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.steveos.services.nixLd;
+  cfg = config.noos.services.nixLd;
 in
 {
   # =========================================================================
@@ -14,7 +14,7 @@ in
   # Btrfs, OpenSSL, Vulkan/Mesa, etc.).
   # =========================================================================
 
-  options.steveos.services.nixLd = {
+  options.noos.services.nixLd = {
     enable = lib.mkOption {
       type = lib.types.bool;
       default = true;

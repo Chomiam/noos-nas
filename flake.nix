@@ -1,5 +1,5 @@
 {
-  description = "STEvE_OS NAS Edition - Configuration NixOS modulaire pour serveur de stockage & transcodage multimédia";
+  description = "Noos NAS Edition - Configuration NixOS modulaire pour serveur de stockage & transcodage multimédia";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-26.05";
@@ -48,7 +48,8 @@
         nas = nasSystem;
         nixnas = nasSystem;
         default = nasSystem;
-      };
+      } // (if baseVars.hostName != "noos-nas" then { noos-nas = nasSystem; } else {})
+        // (if baseVars.hostName != "steveos-nas" then { steveos-nas = nasSystem; } else {});
 
       # Module exportable pour réutilisation
       nixosModules.default = ./modules;
@@ -56,21 +57,33 @@
       # Outil CLI d'administration en Rust
       packages.x86_64-linux = let
         pkgs = import nixpkgs { system = "x86_64-linux"; };
-      in {
-        steveos-cli = pkgs.rustPlatform.buildRustPackage {
-          pname = "steveos-cli";
+        noosCli = pkgs.rustPlatform.buildRustPackage {
+          pname = "noos-cli";
           version = "0.1.0";
           src = ./tools/steveos-cli;
           cargoLock = {
             lockFile = ./tools/steveos-cli/Cargo.lock;
           };
+          postInstall = ''
+            ln -s $out/bin/noos-cli $out/bin/steveos-cli
+          '';
         };
-        default = self.packages.x86_64-linux.steveos-cli;
+      in {
+        noos-cli = noosCli;
+        steveos-cli = noosCli;
+        default = noosCli;
       };
 
-      apps.x86_64-linux.default = {
-        type = "app";
-        program = "${self.packages.x86_64-linux.steveos-cli}/bin/steveos-cli";
+      apps.x86_64-linux = {
+        noos-cli = {
+          type = "app";
+          program = "${self.packages.x86_64-linux.noos-cli}/bin/noos-cli";
+        };
+        steveos-cli = {
+          type = "app";
+          program = "${self.packages.x86_64-linux.steveos-cli}/bin/steveos-cli";
+        };
+        default = self.apps.x86_64-linux.noos-cli;
       };
     };
 }

@@ -13,14 +13,14 @@ const COLOR_GRAY: &str = "\x1b[38;2;147;153;178m";
 
 fn print_banner() {
     println!("{COLOR_MAUVE}{COLOR_BOLD}╔════════════════════════════════════════════════════════════╗{COLOR_RESET}");
-    println!("{COLOR_MAUVE}{COLOR_BOLD}║      🚀 STEvE_OS NAS Edition — CLI Manager (Rust)          ║{COLOR_RESET}");
+    println!("{COLOR_MAUVE}{COLOR_BOLD}║      🚀 Noos NAS Edition — CLI Manager (Rust)          ║{COLOR_RESET}");
     println!("{COLOR_MAUVE}{COLOR_BOLD}╚════════════════════════════════════════════════════════════╝{COLOR_RESET}\n");
 }
 
 fn print_help() {
     print_banner();
     println!("{COLOR_BOLD}USAGE:{COLOR_RESET}");
-    println!("  steveos-cli <COMMANDE> [ARGUMENTS]\n");
+    println!("  noos-cli <COMMANDE> [ARGUMENTS]\n");
     println!("{COLOR_BOLD}COMMANDES DISPONIBLES:{COLOR_RESET}");
     println!("  {COLOR_GREEN}probe{COLOR_RESET}   [user@ip]      Diagnostiquer le matériel du NAS distant (CPU, GPU, disques)");
     println!("  {COLOR_CYAN}copy-id{COLOR_RESET} [user@ip]      Copier votre clé SSH locale sur le NAS");
@@ -85,7 +85,7 @@ fi
         }
         Err(e) => {
             eprintln!("\n{COLOR_RED}✘ Impossible d'exécuter la commande SSH : {e}{COLOR_RESET}");
-            eprintln!("{COLOR_GRAY}Conseil : vérifiez que votre clé SSH est autorisée via : steveos-cli copy-id {target}{COLOR_RESET}");
+            eprintln!("{COLOR_GRAY}Conseil : vérifiez que votre clé SSH est autorisée via : noos-cli copy-id {target}{COLOR_RESET}");
         }
     }
 }
@@ -110,7 +110,7 @@ fn cmd_copy_id(target: &str) {
 
 fn cmd_status() {
     print_banner();
-    println!("{COLOR_BLUE}📊 Évaluation de la configuration NixOS locale (STEvE_OS NAS Edition)...{COLOR_RESET}\n");
+    println!("{COLOR_BLUE}📊 Évaluation de la configuration NixOS locale (Noos NAS Edition)...{COLOR_RESET}\n");
 
     let repo_root = env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
 
@@ -126,7 +126,7 @@ fn cmd_status() {
     println!("{COLOR_BOLD}2. Pilote GPU & Transcodage configuré :{COLOR_RESET}");
     let _ = Command::new("nix")
         .args(["eval", "--raw"])
-        .arg(format!("{}/#nixosConfigurations.nas.config.steveos.hardware.gpu", repo_root.display()))
+        .arg(format!("{}/#nixosConfigurations.nas.config.noos.hardware.gpu", repo_root.display()))
         .status();
     println!("\n");
 
@@ -167,7 +167,7 @@ fn cmd_deploy(target: &str) {
 
     match status {
         Ok(s) if s.success() => {
-            println!("\n{COLOR_GREEN}✔ Déploiement de STEvE_OS NAS Edition terminé avec succès !{COLOR_RESET}");
+            println!("\n{COLOR_GREEN}✔ Déploiement de Noos NAS Edition terminé avec succès !{COLOR_RESET}");
         }
         Ok(s) => {
             eprintln!("\n{COLOR_RED}✘ Le déploiement a échoué avec le code : {}{COLOR_RESET}", s.code().unwrap_or(-1));

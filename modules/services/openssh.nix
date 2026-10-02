@@ -17,12 +17,15 @@ in
       };
       extraConfig = ''
         # Inclusion des partages et règles sFTP dynamiques gérés par STEvE_OS
-        Include /var/lib/steveos/sftp_shares.conf
+        Include /var/lib/noos/sftp_shares.conf
       '';
     };
 
     # Règles tmpfiles pour initialiser les fichiers de configuration sFTP persistants
     systemd.tmpfiles.rules = [
+      "d /var/lib/noos 0755 root root -"
+      "f /var/lib/noos/sftp_shares.conf 0644 root root -"
+      "f /var/lib/noos/sftp_shares.json 0644 root root -"
       "d /var/lib/steveos 0755 root root -"
       "f /var/lib/steveos/sftp_shares.conf 0644 root root -"
       "f /var/lib/steveos/sftp_shares.json 0644 root root -"

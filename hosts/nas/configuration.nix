@@ -2,7 +2,7 @@
 
 {
   # =========================================================================
-  # 🖥️ CONFIGURATION PRINCIPALE DU NAS (STEvE_OS NAS EDITION)
+  # 🖥️ CONFIGURATION PRINCIPALE DU NAS (NOOS NAS EDITION)
   # =========================================================================
 
   imports = [
@@ -21,9 +21,9 @@
   boot.loader.efi.canTouchEfiVariables = true;
 
   # =========================================================================
-  # ⚙️ MAPPING DES VARIABLES VARS.NIX VERS LES OPTIONS STEvEOS.*
+  # ⚙️ MAPPING DES VARIABLES VARS.NIX VERS LES OPTIONS NOOS.*
   # =========================================================================
-  steveos = {
+  noos = {
     hostName = vars.hostName;
     timeZone = vars.timeZone;
     defaultLocale = vars.defaultLocale;
@@ -43,7 +43,7 @@
       username = vars.user.username;
       fullName = if (vars.user ? fullName && vars.user.fullName != null && vars.user.fullName != "")
                  then vars.user.fullName
-                 else (if vars.user.username == "chomiam" then "Axel Valens" else "Administrateur STEvE_OS");
+                 else (if vars.user.username == "chomiam" then "Axel Valens" else "Administrateur Noos");
       homeDirectory = if (vars.user ? homeDirectory && vars.user.homeDirectory != null && vars.user.homeDirectory != "")
                       then vars.user.homeDirectory
                       else "/home/${vars.user.username}";
@@ -92,7 +92,7 @@
       samba = {
         enable = vars.services.samba.enable or true;
         workgroup = vars.services.samba.workgroup or "WORKGROUP";
-        serverString = vars.services.samba.serverString or "STEvE_OS NAS";
+        serverString = vars.services.samba.serverString or "Noos NAS";
         guestAccess = vars.services.samba.guestAccess or false;
         sharesPath = vars.services.samba.sharesPath or "/mnt/storage/shares";
         wsdd = vars.services.samba.wsdd or true;
@@ -133,9 +133,9 @@
   };
 
   # =========================================================================
-  # 🚀 TABLEAU DE BORD STEvE_OS NAS EDITION (PORT 9339)
+  # 🚀 TABLEAU DE BORD NOOS NAS EDITION (PORT 9339)
   # =========================================================================
-  services.steveos-nas-dashboard = {
+  services.noos-nas-dashboard = {
     enable = vars.services.dashboard.enable or true;
     port = vars.services.dashboard.port or 9339;
     openFirewall = true;
@@ -143,7 +143,7 @@
   };
 
   # Dépendance explicite : s'assurer que libvirtd est prêt quand le dashboard démarre
-  systemd.services.steveos-nas-dashboard = {
+  systemd.services.noos-nas-dashboard = {
     wants = [ "libvirtd.service" ];
     after = [ "libvirtd.service" ];
   };
@@ -163,8 +163,8 @@
   environment.etc."issue".text = "";
 
   # Démon de mise à jour dynamique de la bannière console avec la VRAIE IP LAN (ignore docker0 & loopback)
-  systemd.services.steveos-issue-update = {
-    description = "Surveillance et mise à jour de la bannière console STEvE_OS avec l'adresse IP réseau";
+  systemd.services.noos-issue-update = {
+    description = "Surveillance et mise à jour de la bannière console Noos avec l'adresse IP réseau";
     after = [ "network.target" ];
     wantedBy = [ "multi-user.target" ];
     before = [ "getty@tty1.service" ];
@@ -203,11 +203,11 @@
           LAST_IP="$IP"
           cat << EOF > /run/issue
 \e{bold}\e{lightmagenta}╔══════════════════════════════════════════════════════════════════════════════╗\e{reset}
-\e{bold}\e{lightmagenta}║\e{reset}                   \e{bold}\e{white}🚀 STEvE_OS NAS Edition — Tableau de Bord\e{reset}                  \e{bold}\e{lightmagenta}║\e{reset}
+\e{bold}\e{lightmagenta}║\e{reset}                   \e{bold}\e{white}🚀 Noos NAS Edition — Tableau de Bord\e{reset}                  \e{bold}\e{lightmagenta}║\e{reset}
 \e{bold}\e{lightmagenta}╚══════════════════════════════════════════════════════════════════════════════╝\e{reset}
 
   \e{bold}\e{green}●\e{reset} Adresse IP locale      : \e{bold}\e{white}''${IP}\e{reset}
-  \e{bold}\e{cyan}●\e{reset} Interface Web STEvE_OS : \e{bold}\e{yellow}http://''${IP}:9339\e{reset}
+  \e{bold}\e{cyan}●\e{reset} Interface Web Noos     : \e{bold}\e{yellow}http://''${IP}:9339\e{reset}
 
   Connectez-vous via l'interface Web pour administrer votre NAS.
   Console locale : saisissez vos identifiants administrateur ci-dessous.
@@ -218,11 +218,11 @@ EOF
         elif [ -z "$IP" ] && [ -z "$LAST_IP" ]; then
           cat << 'EOF' > /run/issue
 \e{bold}\e{lightmagenta}╔══════════════════════════════════════════════════════════════════════════════╗\e{reset}
-\e{bold}\e{lightmagenta}║\e{reset}                   \e{bold}\e{white}🚀 STEvE_OS NAS Edition — Tableau de Bord\e{reset}                  \e{bold}\e{lightmagenta}║\e{reset}
+\e{bold}\e{lightmagenta}║\e{reset}                   \e{bold}\e{white}🚀 Noos NAS Edition — Tableau de Bord\e{reset}                  \e{bold}\e{lightmagenta}║\e{reset}
 \e{bold}\e{lightmagenta}╚══════════════════════════════════════════════════════════════════════════════╝\e{reset}
 
   \e{bold}\e{yellow}●\e{reset} Adresse IP locale      : \e{bold}\e{yellow}Attente d'adresse IP (DHCP en cours...)\e{reset}
-  \e{bold}\e{cyan}●\e{reset} Interface Web STEvE_OS : \e{bold}\e{yellow}http://<adresse-ip>:9339\e{reset}
+  \e{bold}\e{cyan}●\e{reset} Interface Web Noos     : \e{bold}\e{yellow}http://<adresse-ip>:9339\e{reset}
 
   Connectez-vous via l'interface Web pour administrer votre NAS.
   Console locale : saisissez vos identifiants administrateur ci-dessous.

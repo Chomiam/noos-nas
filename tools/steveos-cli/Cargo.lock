@@ -3,5 +3,5 @@
 version = 4
 
 [[package]]
-name = "steveos-cli"
+name = "noos-cli"
 version = "0.1.0"

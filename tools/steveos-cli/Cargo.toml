@@ -1,7 +1,7 @@
 [package]
-name = "steveos-cli"
+name = "noos-cli"
 version = "0.1.0"
 edition = "2021"
-description = "Outil CLI en Rust pour l'administration et le déploiement de STEvE_OS NAS Edition"
+description = "Outil CLI en Rust pour l'administration et le déploiement de Noos NAS Edition"
 
 [dependencies]

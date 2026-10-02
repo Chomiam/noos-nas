@@ -29,10 +29,18 @@ in
       ips = [ (wgCfg.ip or "10.100.0.1/24") ];
       listenPort = wgCfg.port or 51820;
       generatePrivateKeyFile = true;
-      privateKeyFile = "/var/lib/steveos/server_private.key";
+      privateKeyFile = "/var/lib/noos/server_private.key";
+      preSetup = ''
+        mkdir -p /var/lib/noos /var/lib/steveos
+        if [ -f /var/lib/steveos/server_private.key ] && [ ! -f /var/lib/noos/server_private.key ]; then
+          cp -a /var/lib/steveos/server_private.key /var/lib/noos/server_private.key
+        fi
+      '';
       postSetup = ''
-        mkdir -p /var/lib/steveos
-        ${pkgs.wireguard-tools}/bin/wg pubkey < /var/lib/steveos/server_private.key > /var/lib/steveos/server_public.key || true
+        mkdir -p /var/lib/noos /var/lib/steveos
+        ${pkgs.wireguard-tools}/bin/wg pubkey < /var/lib/noos/server_private.key > /var/lib/noos/server_public.key || true
+        cp -f /var/lib/noos/server_private.key /var/lib/steveos/server_private.key 2>/dev/null || true
+        cp -f /var/lib/noos/server_public.key /var/lib/steveos/server_public.key 2>/dev/null || true
       '';
     };
   };

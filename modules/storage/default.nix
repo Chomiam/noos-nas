@@ -45,6 +45,10 @@
     "d /mnt/remote 0755 root root -"
     "d /mnt/remote/sftp 0755 root root -"
     "d /mnt/remote/smb 0755 root root -"
+    "d /var/lib/noos 0755 root root -"
+    "f /var/lib/noos/pinned_mounts.json 0644 root root -"
+    "f /var/lib/noos/remote_mounts.json 0644 root root -"
+    "d /var/lib/steveos 0755 root root -"
     "f /var/lib/steveos/pinned_mounts.json 0644 root root -"
     "f /var/lib/steveos/remote_mounts.json 0644 root root -"
   ];

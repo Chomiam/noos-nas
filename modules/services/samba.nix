@@ -22,7 +22,7 @@ in
           "printing" = "bsd";
           "printcap name" = "/dev/null";
           "disable spoolss" = "yes";
-          "include" = "/var/lib/steveos/samba_shares.conf";
+          "include" = "/var/lib/noos/samba_shares.conf";
         };
         shares = {
           path = cfg.sharesPath;
@@ -37,6 +37,9 @@ in
 
     # Règles tmpfiles pour initialiser les fichiers de partages dynamiques persistants
     systemd.tmpfiles.rules = [
+      "d /var/lib/noos 0755 root root -"
+      "f /var/lib/noos/samba_shares.conf 0644 root root -"
+      "f /var/lib/noos/samba_shares.json 0644 root root -"
       "d /var/lib/steveos 0755 root root -"
       "f /var/lib/steveos/samba_shares.conf 0644 root root -"
       "f /var/lib/steveos/samba_shares.json 0644 root root -"

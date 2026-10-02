@@ -1,11 +1,11 @@
 {
   # =========================================================================
-  # ⚙️ VARIABLES UTILISATEUR : STEvE_OS NAS EDITION
+  # ⚙️ VARIABLES UTILISATEUR : NOOS NAS EDITION
   # Modifiez ce fichier pour adapter le NAS à votre matériel et vos besoins.
   # Les valeurs non spécifiées ici hériteront de vars-defaults.nix.
   # =========================================================================
 
-  hostName = "steveos-nas";
+  hostName = "noos-nas";
 
   # =========================================================================
   # 👤 COMPTE ADMINISTRATEUR PRINCIPAL

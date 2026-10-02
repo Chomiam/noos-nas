@@ -120,11 +120,24 @@ in
   '';
 
   # 👥 Script d'activation pour la résilience et persistance des utilisateurs créés via le Dashboard
-  system.activationScripts.steveosUsersSync = lib.stringAfter [ "users" "groups" ] ''
-    mkdir -p /var/lib/steveos
-    chmod 0750 /var/lib/steveos
+  system.activationScripts.noosUsersSync = lib.stringAfter [ "users" "groups" ] ''
+    mkdir -p /var/lib/noos /var/lib/steveos
+    chmod 0750 /var/lib/noos /var/lib/steveos
 
-    REGISTRY_FILE="/var/lib/steveos/users-registry.json"
+    # Synchronisation bidirectionnelle initiale Noos <-> Legacy STEvE_OS
+    for legacy_f in /var/lib/steveos/*; do
+      if [ -e "$legacy_f" ]; then
+        fname=$(basename "$legacy_f")
+        if [ ! -e "/var/lib/noos/$fname" ]; then
+          cp -a "$legacy_f" "/var/lib/noos/$fname" 2>/dev/null || true
+        fi
+      fi
+    done
+
+    REGISTRY_FILE="/var/lib/noos/users-registry.json"
+    if [ ! -f "$REGISTRY_FILE" ] && [ -f "/var/lib/steveos/users-registry.json" ]; then
+      REGISTRY_FILE="/var/lib/steveos/users-registry.json"
+    fi
     if [ -f "$REGISTRY_FILE" ]; then
       # Restauration et synchronisation des groupes personnalisés enregistrés
       for grp in $(${pkgs.jq}/bin/jq -r '(.custom_group_descriptions // {}) | keys[]' "$REGISTRY_FILE" 2>/dev/null); do
@@ -201,6 +214,7 @@ in
 
   # 📁 Règles systemd-tmpfiles déclaratives pour /home, dossiers personnels, /mnt et /var/lib/steveos
   systemd.tmpfiles.rules = [
+    "d /var/lib/noos 0750 root wheel - -"
     "d /var/lib/steveos 0750 root wheel - -"
     "d /etc/nixos 0775 ${u.username} users - -"
     "d /home 0755 ${u.username} users - -"
