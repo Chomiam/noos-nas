@@ -1,8 +1,8 @@
 { config, lib, pkgs, ... }:
 
 let
-  f2b = config.steveos.services.fail2ban;
-  u = config.steveos.user;
+  f2b = config.noos.services.fail2ban;
+  u = config.noos.user;
 in
 {
   security.sudo = {

@@ -1,7 +1,7 @@
 { config, lib, pkgs, ... }:
 
 let
-  user = config.steveos.user.username;
+  user = config.noos.user.username;
   dataDir = "/home/${user}/docker/arcane";
 in
 {

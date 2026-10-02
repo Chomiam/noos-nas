@@ -1,8 +1,8 @@
 { config, lib, pkgs, ... }:
 
 let
-  isIntel = config.steveos.hardware.gpu == "intel";
-  codecs = config.steveos.hardware.enableCodecs;
+  isIntel = config.noos.hardware.gpu == "intel";
+  codecs = config.noos.hardware.enableCodecs;
 in
 {
   config = lib.mkIf isIntel {

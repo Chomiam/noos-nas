@@ -1,8 +1,8 @@
 { config, lib, pkgs, ... }:
 
 let
-  isAmd = config.steveos.hardware.gpu == "amd";
-  codecs = config.steveos.hardware.enableCodecs;
+  isAmd = config.noos.hardware.gpu == "amd";
+  codecs = config.noos.hardware.enableCodecs;
 in
 {
   config = lib.mkIf isAmd {

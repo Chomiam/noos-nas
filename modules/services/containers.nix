@@ -1,8 +1,8 @@
 { config, lib, pkgs, ... }:
 
 let
-  dockerCfg = config.steveos.services.docker;
-  podmanCfg = config.steveos.services.podman;
+  dockerCfg = config.noos.services.docker;
+  podmanCfg = config.noos.services.podman;
 in
 {
   config = {

@@ -1,8 +1,8 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.steveos.services.openssh;
-  sftpCfg = config.steveos.services.sftp;
+  cfg = config.noos.services.openssh;
+  sftpCfg = config.noos.services.sftp;
 in
 {
   config = lib.mkIf (cfg.enable || sftpCfg.enable) {
@@ -26,9 +26,6 @@ in
       "d /var/lib/noos 0755 root root -"
       "f /var/lib/noos/sftp_shares.conf 0644 root root -"
       "f /var/lib/noos/sftp_shares.json 0644 root root -"
-      "d /var/lib/steveos 0755 root root -"
-      "f /var/lib/steveos/sftp_shares.conf 0644 root root -"
-      "f /var/lib/steveos/sftp_shares.json 0644 root root -"
       "d /mnt/storage/sftp 0755 root root -"
     ];
 

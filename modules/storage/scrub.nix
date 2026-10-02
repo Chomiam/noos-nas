@@ -1,7 +1,7 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.steveos.storage;
+  cfg = config.noos.storage;
 in
 {
   config = {

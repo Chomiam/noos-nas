@@ -1,7 +1,7 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.steveos.storage.spindown;
+  cfg = config.noos.storage.spindown;
   # Calcul du paramètre hdparm -S (multiples de 5 secondes pour 1-240)
   # ex: 20 minutes = 1200s -> 1200 / 5 = 240
   spindownVal = toString (cfg.idleMinutes * 12);

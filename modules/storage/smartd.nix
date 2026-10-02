@@ -1,7 +1,7 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.steveos.storage.smartd;
+  cfg = config.noos.storage.smartd;
 in
 {
   config = lib.mkIf cfg.enable {

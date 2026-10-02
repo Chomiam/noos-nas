@@ -3,7 +3,7 @@
 with lib;
 
 let
-  cfg = config.steveos.boot;
+  cfg = config.noos.boot;
 in
 {
   config = {

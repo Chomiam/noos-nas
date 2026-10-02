@@ -1,9 +1,9 @@
 { config, lib, pkgs, ... }:
 
 let
-  isNvidiaLegacy = config.steveos.hardware.gpu == "nvidia-legacy";
-  codecs = config.steveos.hardware.enableCodecs;
-  branch = config.steveos.hardware.nvidiaLegacyBranch;
+  isNvidiaLegacy = config.noos.hardware.gpu == "nvidia-legacy";
+  codecs = config.noos.hardware.enableCodecs;
+  branch = config.noos.hardware.nvidiaLegacyBranch;
 in
 {
   config = lib.mkIf isNvidiaLegacy {

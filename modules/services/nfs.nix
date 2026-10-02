@@ -1,7 +1,7 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.steveos.services.nfs;
+  cfg = config.noos.services.nfs;
 in
 {
   config = lib.mkIf cfg.enable {

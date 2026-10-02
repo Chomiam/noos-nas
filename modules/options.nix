@@ -3,10 +3,6 @@
 with lib;
 
 {
-  imports = [
-    (lib.mkAliasOptionModule [ "steveos" ] [ "noos" ])
-  ];
-
   options.noos = {
     hostName = mkOption {
       type = types.str;

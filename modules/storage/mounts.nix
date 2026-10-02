@@ -6,9 +6,9 @@ let
     then (builtins.fromJSON (builtins.readFile mountsJsonPath))
     else [];
   activeMounts = builtins.filter (m: m.enabled or true) customMounts;
-  user = config.steveos.user.username;
+  user = config.noos.user.username;
   # Points de montage déjà déclarés dans vars.nix pour éviter les doublons
-  varsMountPoints = map (d: d.mountPoint) (config.steveos.storage.disks or []);
+  varsMountPoints = map (d: d.mountPoint) (config.noos.storage.disks or []);
   filteredJsonMounts = builtins.filter (m: !(builtins.elem m.mountPoint varsMountPoints)) activeMounts;
 in
 {

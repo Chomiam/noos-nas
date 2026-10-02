@@ -43,7 +43,7 @@ noos-nas/
 │       └── storage.nix             # Montages et pools de stockage
 │
 ├── modules/
-│   ├── options.nix                 # Définition des options déclaratives (noos.* (avec alias steveos.*))
+│   ├── options.nix                 # Définition des options déclaratives (noos.*)
 │   ├── core/                       # Nix, utilisateurs, sécurité, pare-feu modulaire
 │   ├── hardware/                   # Pilotes GPU, codecs VA-API/QSV, économie d'énergie
 │   ├── storage/                    # SMART, spindown, maintenance disques

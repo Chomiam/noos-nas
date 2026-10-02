@@ -34,13 +34,7 @@
         "type": "github"
       }
     },
-    "root": {
-      "inputs": {
-        "nixpkgs": "nixpkgs",
-        "steveos-nas-dashboard": "steveos-nas-dashboard"
-      }
-    },
-    "steveos-nas-dashboard": {
+    "noos-nas-dashboard": {
       "inputs": {
         "flake-utils": "flake-utils",
         "nixpkgs": [
@@ -48,17 +42,23 @@
         ]
       },
       "locked": {
-        "lastModified": 1790935792,
-        "narHash": "sha256-LmNJNBVG9ButhugqP2q8PLTSNyjCwFAf42QavxNyHtg=",
+        "lastModified": 1790937075,
+        "narHash": "sha256-prNNUIpJWCEdVvpLWenhnqqRFDy+fgynE5HumKSSJEk=",
         "owner": "Chomiam",
         "repo": "noos-nas-dashboard",
-        "rev": "563ed4c46d7f5338eb2d260b03b3634b7a2c9083",
+        "rev": "d417556ec4afc03977717ca770ec14ce35f0a1ff",
         "type": "github"
       },
       "original": {
         "owner": "Chomiam",
         "repo": "noos-nas-dashboard",
         "type": "github"
+      }
+    },
+    "root": {
+      "inputs": {
+        "nixpkgs": "nixpkgs",
+        "noos-nas-dashboard": "noos-nas-dashboard"
       }
     },
     "systems": {

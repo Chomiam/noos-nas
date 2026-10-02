@@ -1,7 +1,7 @@
 { config, lib, pkgs, ... }:
 
 let
-  wgCfg = config.steveos.services.wireguard;
+  wgCfg = config.noos.services.wireguard;
 in
 {
   config = lib.mkIf (wgCfg.enable or true) {
@@ -31,16 +31,11 @@ in
       generatePrivateKeyFile = true;
       privateKeyFile = "/var/lib/noos/server_private.key";
       preSetup = ''
-        mkdir -p /var/lib/noos /var/lib/steveos
-        if [ -f /var/lib/steveos/server_private.key ] && [ ! -f /var/lib/noos/server_private.key ]; then
-          cp -a /var/lib/steveos/server_private.key /var/lib/noos/server_private.key
-        fi
+        mkdir -p /var/lib/noos
       '';
       postSetup = ''
-        mkdir -p /var/lib/noos /var/lib/steveos
+        mkdir -p /var/lib/noos
         ${pkgs.wireguard-tools}/bin/wg pubkey < /var/lib/noos/server_private.key > /var/lib/noos/server_public.key || true
-        cp -f /var/lib/noos/server_private.key /var/lib/steveos/server_private.key 2>/dev/null || true
-        cp -f /var/lib/noos/server_public.key /var/lib/steveos/server_public.key 2>/dev/null || true
       '';
     };
   };

@@ -1,8 +1,8 @@
 { config, lib, pkgs, ... }:
 
 let
-  isNvidia = config.steveos.hardware.gpu == "nvidia";
-  codecs = config.steveos.hardware.enableCodecs;
+  isNvidia = config.noos.hardware.gpu == "nvidia";
+  codecs = config.noos.hardware.enableCodecs;
 in
 {
   config = lib.mkIf isNvidia {

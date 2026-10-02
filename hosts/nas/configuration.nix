@@ -24,7 +24,7 @@
   # ⚙️ MAPPING DES VARIABLES VARS.NIX VERS LES OPTIONS NOOS.*
   # =========================================================================
   noos = {
-    hostName = if vars.hostName == "steveos-nas" then "noos-nas" else vars.hostName;
+    hostName = vars.hostName;
     timeZone = vars.timeZone;
     defaultLocale = vars.defaultLocale;
     stateVersion = vars.stateVersion;

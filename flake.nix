@@ -3,7 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-26.05";
-    steveos-nas-dashboard = {
+    noos-nas-dashboard = {
       url = "github:Chomiam/noos-nas-dashboard";
       inputs.nixpkgs.follows = "nixpkgs";
     };
@@ -37,7 +37,7 @@
           specialArgs = { inherit inputs vars; };
           modules = [
             { nixpkgs.hostPlatform = "x86_64-linux"; }
-            inputs.steveos-nas-dashboard.nixosModules.default
+            inputs.noos-nas-dashboard.nixosModules.default
             ./hosts/nas/configuration.nix
           ];
         };
@@ -50,8 +50,7 @@
         nas = nasSystem;
         nixnas = nasSystem;
         default = nasSystem;
-      } // (if baseVars.hostName != "noos-nas" then { noos-nas = nasSystem; } else {})
-        // (if baseVars.hostName != "steveos-nas" then { steveos-nas = nasSystem; } else {});
+      } // (if baseVars.hostName != "noos-nas" then { noos-nas = nasSystem; } else {});
 
       # Module exportable pour réutilisation
       nixosModules.default = ./modules;
@@ -62,17 +61,13 @@
         noosCli = pkgs.rustPlatform.buildRustPackage {
           pname = "noos-cli";
           version = "0.1.0";
-          src = ./tools/steveos-cli;
+          src = ./tools/noos-cli;
           cargoLock = {
-            lockFile = ./tools/steveos-cli/Cargo.lock;
+            lockFile = ./tools/noos-cli/Cargo.lock;
           };
-          postInstall = ''
-            ln -s $out/bin/noos-cli $out/bin/steveos-cli
-          '';
         };
       in {
         noos-cli = noosCli;
-        steveos-cli = noosCli;
         default = noosCli;
       };
 
@@ -80,10 +75,6 @@
         noos-cli = {
           type = "app";
           program = "${self.packages.x86_64-linux.noos-cli}/bin/noos-cli";
-        };
-        steveos-cli = {
-          type = "app";
-          program = "${self.packages.x86_64-linux.steveos-cli}/bin/steveos-cli";
         };
         default = self.apps.x86_64-linux.noos-cli;
       };

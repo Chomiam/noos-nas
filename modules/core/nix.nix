@@ -25,10 +25,10 @@
 
   nixpkgs.config.allowUnfree = true;
 
-  time.timeZone = config.steveos.timeZone;
-  i18n.defaultLocale = config.steveos.defaultLocale;
-  console.keyMap = config.steveos.keyboard.keyMap;
-  networking.hostName = config.steveos.hostName;
+  time.timeZone = config.noos.timeZone;
+  i18n.defaultLocale = config.noos.defaultLocale;
+  console.keyMap = config.noos.keyboard.keyMap;
+  networking.hostName = config.noos.hostName;
   networking.useDHCP = lib.mkDefault true;
-  system.stateVersion = config.steveos.stateVersion;
+  system.stateVersion = config.noos.stateVersion;
 }

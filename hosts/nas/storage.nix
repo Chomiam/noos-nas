@@ -27,7 +27,7 @@
 
   # Structure déclarative des dossiers partagés du NAS : appartiennent à l'utilisateur et au groupe 'storage' (setgid 2775)
   systemd.tmpfiles.rules = let
-    u = config.steveos.user.username;
+    u = config.noos.user.username;
   in [
     "d /mnt 2775 ${u} storage -"
     "z /mnt 2775 ${u} storage -"
@@ -44,7 +44,7 @@
       Type = "oneshot";
       RemainAfterExit = true;
       ExecStart = pkgs.writeShellScript "ensure-mnt-permissions" ''
-        USER="${config.steveos.user.username}"
+        USER="${config.noos.user.username}"
         if ! id "$USER" >/dev/null 2>&1; then
           USER=$(awk -F: '$3 >= 1000 && $3 < 60000 && $1 != "nobody" {print $1; exit}' /etc/passwd 2>/dev/null || echo "root")
         fi
@@ -69,7 +69,7 @@
   # Import automatique du fichier local s'il existe (non suivi par Git)
   imports = lib.optional (builtins.pathExists ./storage.local.nix) ./storage.local.nix;
 
-  # Montage dynamique des volumes déclarés dans vars.nix (steveos.storage.disks)
+  # Montage dynamique des volumes déclarés dans vars.nix (noos.storage.disks)
   fileSystems = lib.listToAttrs (map (disk: {
     name = disk.mountPoint;
     value = {
@@ -77,5 +77,5 @@
       fsType = disk.fsType;
       options = disk.options;
     };
-  }) (config.steveos.storage.disks or []));
+  }) (config.noos.storage.disks or []));
 }

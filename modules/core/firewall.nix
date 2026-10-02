@@ -12,7 +12,7 @@ let
     else {};
   firewallEnabled = if (builtins.hasAttr "is_enabled" customState)
     then customState.is_enabled
-    else config.steveos.firewall.enable;
+    else config.noos.firewall.enable;
   activeRules = builtins.filter (r: r.enabled or true) customRules;
   customTcpPorts = map (r: r.port) (builtins.filter (r: (r.protocol or "TCP") == "TCP" || (r.protocol or "TCP") == "BOTH") activeRules);
   customUdpPorts = map (r: r.port) (builtins.filter (r: (r.protocol or "UDP") == "UDP" || (r.protocol or "UDP") == "BOTH") activeRules);
