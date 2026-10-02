@@ -42,15 +42,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1790967977,
-        "narHash": "sha256-A4w0aPSBnfbFUTtk3m4U5AXunUaQlIwBcpzuFbqW1A4=",
+        "lastModified": 1790972194,
+        "narHash": "sha256-+MrtZk2ITZlz8s/lt9ejQMdMYzsvJwe+iGjztGJny6E=",
         "owner": "Chomiam",
         "repo": "noos-nas-dashboard",
-        "rev": "9f4f91b98f4620c51717c361583ae725116281e8",
+        "rev": "7863a6c9d8711a09b9b8af4fa8fc0b25e7ad5202",
         "type": "github"
       },
       "original": {
         "owner": "Chomiam",
+        "ref": "testing",
         "repo": "noos-nas-dashboard",
         "type": "github"
       }
