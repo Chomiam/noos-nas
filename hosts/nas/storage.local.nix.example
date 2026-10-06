@@ -8,7 +8,7 @@
 # 🛡️ SÉCURITÉ & MISES À JOUR :
 # Ce fichier (storage.local.nix) est dans le .gitignore.
 # Il ne sera JAMAIS suivi ni écrasé lors d'un 'git pull' ou d'une mise à jour
-# du dépôt partagé STEvE_OS NAS.
+# du dépôt partagé Noos NAS.
 # =============================================================================
 
 { config, lib, pkgs, ... }:

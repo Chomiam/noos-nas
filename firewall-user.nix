@@ -2,7 +2,7 @@
 
 {
   # =========================================================================
-  # 🛡️ RÈGLES DE PARE-FEU PERSONNALISÉES (STEvE_OS NAS EDITION)
+  # 🛡️ RÈGLES DE PARE-FEU PERSONNALISÉES (NOOS NAS EDITION)
   # Ce fichier permet d'ajouter des ports manuellement sans modifier les modules.
   # =========================================================================
 

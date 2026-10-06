@@ -62,7 +62,7 @@
     1. **Format du titre de l'Issue** : `[BUG-YYYYMMDD-XX]: Résumé synthétique de l'anomalie` (ex: `[BUG-20260930-01]`).
     2. **Corps de l'Issue** :
        - **Symptôme & Contexte** : Message d'erreur exact, comportement inattendu, logs système ou capture d'écran.
-       - **Composant(s) impacté(s)** : Configuration NixOS (`steve_os-nix`) et/ou Dashboard Web (`noos-nas-dashboard`).
+       - **Composant(s) impacté(s)** : Configuration NixOS (`noos-nas`) et/ou Dashboard Web (`noos-nas-dashboard`).
        - **Cause racine (RCA)** : Origine technique précise de la défaillance après investigation.
        - **Stratégie de résolution** : Correctifs appliqués et mesures de repli (fallbacks).
     3. **Traçabilité obligatoire dans les Commits de correction de bugs** :
@@ -103,8 +103,8 @@
 
 ---
 
-## 🐳 Règle n°10 : Publication et Traçabilité Obligatoire sur `steveos_nas_store`
-- **Toute modification ou ajout de configuration Docker Compose (fichiers `compose.yaml`, `manifest.json`, `store.json`) pour les applications de l'App Store doit impérativement être committée et poussée sur le dépôt GitHub officiel [`Chomiam/steveos_nas_store`](https://github.com/Chomiam/steveos_nas_store).**
+## 🐳 Règle n°10 : Publication et Traçabilité Obligatoire sur `noos_nas_store`
+- **Toute modification ou ajout de configuration Docker Compose (fichiers `compose.yaml`, `manifest.json`, `store.json`) pour les applications de l'App Store doit impérativement être committée et poussée sur le dépôt GitHub officiel [`Chomiam/noos_nas_store`](https://github.com/Chomiam/noos_nas_store).**
 - **Respect du format standardisé et des commentaires conventionnels** :
   - Chaque `compose.yaml` doit obligatoirement comporter l'en-tête décoré standard Noos précisant l'application, les ports WebUI/DNS, les volumes hôtes et le mode déclaratif.
   - Spécifier systématiquement le protocole réseau (`/tcp`, `/udp`) pour les services sensibles (comme le port `53:53/udp` + `53:53/tcp` pour AdGuard/Pi-hole).
