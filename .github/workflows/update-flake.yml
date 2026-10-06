@@ -1,0 +1,75 @@
+name: "Update Flake Inputs"
+
+on:
+  schedule:
+    # Tous les dimanches à 03h00 UTC
+    - cron: '0 3 * * 0'
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branche à mettre à jour (testing ou main)'
+        required: true
+        default: 'testing'
+        type: choice
+        options:
+          - testing
+          - main
+      input:
+        description: 'Input spécifique à mettre à jour (laisser vide pour tout mettre à jour)'
+        required: false
+        default: ''
+        type: string
+  repository_dispatch:
+    types: [update-flake, dashboard-released]
+
+jobs:
+  update-flake:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Déterminer la branche cible
+        id: branch
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "target_branch=${{ github.event.inputs.branch }}" >> $GITHUB_OUTPUT
+          else
+            echo "target_branch=testing" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Checkout du dépôt
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.branch.outputs.target_branch }}
+          fetch-depth: 0
+
+      - name: Installation de Nix
+        uses: DeterminateSystems/nix-installer-action@main
+
+      - name: Configuration de Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Mise à jour des inputs du Flake
+        run: |
+          if [ -n "${{ github.event.inputs.input }}" ]; then
+            echo "Mise à jour de l'input ${{ github.event.inputs.input }}..."
+            nix flake update ${{ github.event.inputs.input }}
+          else
+            echo "Mise à jour de tous les inputs du flake..."
+            nix flake update
+          fi
+
+      - name: Vérification de l'évaluation Nix
+        run: |
+          nix eval .#nixosConfigurations.nas.config.system.build.toplevel.drvPath >/dev/null
+
+      - name: Commit et Push de flake.lock
+        run: |
+          if git diff --quiet flake.lock; then
+            echo "Aucune modification de flake.lock détectée."
+          else
+            git add flake.lock
+            git commit -m "chore(flake): mise à jour automatique des inputs dans flake.lock [skip ci]"
+            git push origin ${{ steps.branch.outputs.target_branch }}
+            echo "✅ flake.lock mis à jour et poussé sur ${{ steps.branch.outputs.target_branch }}."
+          fi
