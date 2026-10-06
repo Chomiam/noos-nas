@@ -4,7 +4,7 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-26.05";
     noos-nas-dashboard = {
-      url = "github:Chomiam/noos-nas-dashboard";
+      url = "github:Chomiam/noos-nas-dashboard/stable";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };

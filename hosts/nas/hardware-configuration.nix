@@ -1,4 +1,7 @@
-# Configuration matérielle réelle du STEvE_OS NAS (générée depuis nixnas)
+# Configuration matérielle par défaut (générique x86_64)
+# La configuration matérielle spécifique à chaque machine est isolée dans :
+# - /etc/nixos/hardware-configuration.nix (générée à l'installation)
+# - ou hosts/nas/hardware.local.nix (fichier ignoré par Git)
 { config, lib, pkgs, modulesPath, ... }:
 
 {
@@ -15,25 +18,26 @@
   boot.loader.systemd-boot.enable = lib.mkDefault true;
   boot.loader.efi.canTouchEfiVariables = lib.mkDefault true;
 
-  fileSystems."/" = {
-    device = "/dev/disk/by-uuid/3e2529d6-42ee-414d-a0e5-cf3513b56dd5";
+  # Montages par défaut basés sur les labels d'installation Noos NAS
+  fileSystems."/" = lib.mkDefault {
+    device = "/dev/disk/by-label/ROOT";
     fsType = "btrfs";
   };
 
-  fileSystems."/home" = {
-    device = "/dev/disk/by-uuid/3e2529d6-42ee-414d-a0e5-cf3513b56dd5";
+  fileSystems."/home" = lib.mkDefault {
+    device = "/dev/disk/by-label/ROOT";
     fsType = "btrfs";
     options = [ "subvol=home" ];
   };
 
-  fileSystems."/nix" = {
-    device = "/dev/disk/by-uuid/3e2529d6-42ee-414d-a0e5-cf3513b56dd5";
+  fileSystems."/nix" = lib.mkDefault {
+    device = "/dev/disk/by-label/ROOT";
     fsType = "btrfs";
     options = [ "subvol=nix" ];
   };
 
-  fileSystems."/boot" = {
-    device = "/dev/disk/by-uuid/5BF1-7FB8";
+  fileSystems."/boot" = lib.mkDefault {
+    device = "/dev/disk/by-label/BOOT";
     fsType = "vfat";
     options = [ "fmask=0077" "dmask=0077" ];
   };

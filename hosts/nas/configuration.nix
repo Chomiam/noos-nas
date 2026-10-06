@@ -8,6 +8,8 @@
   imports = [
     (if builtins.pathExists ../../hardware-configuration.nix
      then ../../hardware-configuration.nix
+     else if builtins.pathExists ./hardware.local.nix
+     then ./hardware.local.nix
      else ./hardware-configuration.nix)
     ./storage.nix
     ../../modules

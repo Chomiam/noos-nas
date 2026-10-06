@@ -3,7 +3,7 @@
 {
   # =========================================================================
   # 💾 MODULE DE STOCKAGE DU NAS (SOCLE PARTAGÉ)
-  # Ce fichier fait partie du socle STEvE_OS partagé et est synchronisé via Git.
+  # Ce fichier fait partie du socle Noos NAS partagé et est synchronisé via Git.
   #
   # ⚠️ NE PAS DÉCLARER DE DISQUES EN DUR DANS CE FICHIER :
   # Afin que les mises à jour (git pull) n'écrasent pas vos points de montage
