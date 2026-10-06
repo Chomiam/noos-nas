@@ -1,6 +1,15 @@
-name: "Update Flake Inputs"
+name: "Update & Validate Flake"
 
 on:
+  push:
+    branches:
+      - testing
+      - main
+    paths:
+      - 'flake.nix'
+      - 'hosts/**'
+      - 'modules/**'
+      - 'vars-defaults.nix'
   schedule:
     # Tous les dimanches à 03h00 UTC
     - cron: '0 3 * * 0'
@@ -22,17 +31,28 @@ on:
   repository_dispatch:
     types: [update-flake, dashboard-released]
 
+permissions:
+  contents: write
+
 jobs:
   update-flake:
     runs-on: ubuntu-latest
     steps:
-      - name: Déterminer la branche cible
+      - name: Déterminer la branche cible et l'input
         id: branch
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "target_branch=${{ github.event.inputs.branch }}" >> $GITHUB_OUTPUT
+            echo "specific_input=${{ github.event.inputs.input }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            echo "target_branch=${{ github.event.client_payload.branch || 'testing' }}" >> $GITHUB_OUTPUT
+            echo "specific_input=${{ github.event.client_payload.input || 'noos-nas-dashboard' }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event_name }}" = "push" ]; then
+            echo "target_branch=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+            echo "specific_input=" >> $GITHUB_OUTPUT
           else
             echo "target_branch=testing" >> $GITHUB_OUTPUT
+            echo "specific_input=" >> $GITHUB_OUTPUT
           fi
 
       - name: Checkout du dépôt
@@ -40,6 +60,7 @@ jobs:
         with:
           ref: ${{ steps.branch.outputs.target_branch }}
           fetch-depth: 0
+          token: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
 
       - name: Installation de Nix
         uses: DeterminateSystems/nix-installer-action@main
@@ -51,25 +72,29 @@ jobs:
 
       - name: Mise à jour des inputs du Flake
         run: |
-          if [ -n "${{ github.event.inputs.input }}" ]; then
-            echo "Mise à jour de l'input ${{ github.event.inputs.input }}..."
-            nix flake update ${{ github.event.inputs.input }}
+          if [ -n "${{ steps.branch.outputs.specific_input }}" ]; then
+            echo "Mise à jour ciblée de l'input ${{ steps.branch.outputs.specific_input }}..."
+            nix flake update ${{ steps.branch.outputs.specific_input }}
+          elif [ "${{ github.event_name }}" = "push" ]; then
+            echo "Vérification et alignement du lock file..."
+            nix flake lock --no-update-lock-file 2>/dev/null || nix flake update
           else
-            echo "Mise à jour de tous les inputs du flake..."
+            echo "Mise à jour globale de tous les inputs du flake..."
             nix flake update
           fi
 
-      - name: Vérification de l'évaluation Nix
+      - name: Vérification de l'évaluation NixOS
         run: |
+          echo "Validation de l'intégrité de la dérivation NixOS..."
           nix eval .#nixosConfigurations.nas.config.system.build.toplevel.drvPath >/dev/null
 
       - name: Commit et Push de flake.lock
         run: |
           if git diff --quiet flake.lock; then
-            echo "Aucune modification de flake.lock détectée."
+            echo "Aucune modification de flake.lock nécessaire."
           else
             git add flake.lock
-            git commit -m "chore(flake): mise à jour automatique des inputs dans flake.lock [skip ci]"
+            git commit -m "chore(flake): mise à jour automatique de flake.lock [skip ci]"
             git push origin ${{ steps.branch.outputs.target_branch }}
             echo "✅ flake.lock mis à jour et poussé sur ${{ steps.branch.outputs.target_branch }}."
           fi
