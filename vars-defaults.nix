@@ -37,7 +37,9 @@
       "docker"
       "podman"
     ];
-    sshAuthorizedKeys = [];
+    sshAuthorizedKeys = [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAKTtcn0Ok3EGfiP0+00oknZI9SwGw7ael41PfizSeit chomiam@pop-os"
+    ];
   };
 
   # 🎮 Matériel & Transcodage GPU
