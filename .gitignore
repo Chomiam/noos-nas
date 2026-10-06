@@ -6,3 +6,5 @@ result-*
 *.bak
 *.local.nix
 hosts/nas/storage.local.nix
+hosts/nas/hardware.local.nix
+hardware-configuration.nix
