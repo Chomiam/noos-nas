@@ -9,7 +9,7 @@
   [![Rust](https://img.shields.io/badge/Outillage-Rust%201.80+-orange?style=for-the-badge&logo=rust&logoColor=white)](https://www.rust-lang.org)
   [![Btrfs & ZFS](https://img.shields.io/badge/Stockage-Btrfs%20%7C%20ZFS%20%7C%20RAID-green?style=for-the-badge&logo=linux&logoColor=white)](https://btrfs.readthedocs.io)
   [![Transcoding](https://img.shields.io/badge/GPU-Intel%20QuickSync%20%7C%20AMD%20%7C%20Nvidia-purple?style=for-the-badge)](https://github.com/Chomiam/noos-nas)
-  [![License](https://img.shields.io/badge/Licence-Open%20Source-teal?style=for-the-badge)](#)
+  [![License](https://img.shields.io/badge/Licence-GNU%20GPLv3-blue?style=for-the-badge)](LICENSE)
 
   <p align="center">
     <strong>Reprenez le contrôle absolu de votre stockage privé. Sans abonnement récurrent. Sans télémétrie obscure. Sans risque de panne lors des mises à jour.</strong>
@@ -126,6 +126,13 @@ Noos NAS Edition fait partie intégrante d'un écosystème modulaire et harmonie
 - [**Noos NAS Store**](https://github.com/Chomiam/noos_nas_store) : La boutique de plus de 640 conteneurs Docker Compose déployables en 1-clic.
 - [**Noos Game Eggs**](https://github.com/Chomiam/noos_nas_eggs) : Le hub de serveurs de jeux vidéo clé en main (Minecraft, Palworld, Valheim, etc.).
 - [**Noos NAS ISO**](https://github.com/Chomiam/noos-nas_iso) : L'installateur réseau automatisé accessible directement depuis votre navigateur.
+
+---
+
+## 📄 Licence
+
+Ce projet est distribué sous licence libre et copyleft **GNU General Public License v3.0 (GPLv3)**.  
+Consultez le fichier [LICENSE](LICENSE) pour plus d'informations.
 
 ---
 
