@@ -24,10 +24,18 @@ in
     ];
     environment = {
       PORT = "3552";
+      PUID = "1000";
+      PGID = "100";
       ENCRYPTION_KEY = "0c8f24b63e073f21f04431b2bd81f6f65bbf5b2571ccaf9eda3dc5eab3486f85";
     };
   };
 
-  # 3. Ouverture du port 3552 dans le pare-feu NixOS
+  # 3. Maintien strict des permissions sur le dossier de données persistant
+  systemd.services.docker-arcane.preStart = lib.mkAfter ''
+    chown -R ${user}:users ${dataDir}
+    chmod -R u+rwX,g+rwX ${dataDir}
+  '';
+
+  # 4. Ouverture du port 3552 dans le pare-feu NixOS
   networking.firewall.allowedTCPPorts = [ 3552 ];
 }
