@@ -87,11 +87,17 @@ in
     mkdir -p "${u.homeDirectory}/documents" \
              "${u.homeDirectory}/images" \
              "${u.homeDirectory}/videos" \
-             "${u.homeDirectory}/musique" \
+             "${u.homeDirectory}/musiques" \
              "${u.homeDirectory}/telechargements"
 
+    # Migration transparente de l'ancien dossier 'musique' (singulier) vers 'musiques' (pluriel)
+    if [ -d "${u.homeDirectory}/musique" ] && [ ! -L "${u.homeDirectory}/musique" ]; then
+      cp -rn "${u.homeDirectory}/musique/." "${u.homeDirectory}/musiques/" 2>/dev/null || true
+      rm -rf "${u.homeDirectory}/musique" 2>/dev/null || true
+    fi
+
     # Nettoyage sécurisé des anciens dossiers accentués / majuscules et des liens symboliques obsolètes
-    for old in Documents Images Vidéos Musique Téléchargements Pictures Videos Music Downloads downloads download pictures music; do
+    for old in Documents Images Vidéos Musique Musiques Téléchargements Pictures Videos Music Downloads downloads download pictures music musique; do
       if [ -L "${u.homeDirectory}/$old" ]; then
         rm -f "${u.homeDirectory}/$old" 2>/dev/null || true
       elif [ -d "${u.homeDirectory}/$old" ]; then
@@ -104,7 +110,7 @@ in
                "${u.homeDirectory}/documents" \
                "${u.homeDirectory}/images" \
                "${u.homeDirectory}/videos" \
-               "${u.homeDirectory}/musique" \
+               "${u.homeDirectory}/musiques" \
                "${u.homeDirectory}/telechargements"
 
     # Propriété déclarative de /mnt pour l'utilisateur et le groupe storage (setgid 2775)
@@ -208,7 +214,7 @@ in
     "d ${u.homeDirectory}/documents 0755 ${u.username} users - -"
     "d ${u.homeDirectory}/images 0755 ${u.username} users - -"
     "d ${u.homeDirectory}/videos 0755 ${u.username} users - -"
-    "d ${u.homeDirectory}/musique 0755 ${u.username} users - -"
+    "d ${u.homeDirectory}/musiques 0755 ${u.username} users - -"
     "d ${u.homeDirectory}/telechargements 0755 ${u.username} users - -"
   ];
 
