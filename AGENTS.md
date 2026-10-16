@@ -93,9 +93,9 @@
 
 ---
 
-## 🔄 Règle n°9 : Actualisation Continue de la Base de Connaissances (`steveos-knowledge`)
+## 🔄 Règle n°9 : Actualisation Continue de la Base de Connaissances (`noos-knowledge`)
 - **À chaque bogue corrigé, retour d'expérience (REX) ou amélioration architecturale sur les projets de l'écosystème Noos :**
-  - Mettre à jour systématiquement le skill [`steveos-knowledge`](file:///home/chomiam/Projects/noos-nas/.agents/skills/steveos-knowledge/SKILL.md) (et sa copie globale).
+  - Mettre à jour systématiquement le skill [`noos-knowledge`](file:///home/chomiam/Projects/noos-nas/.agents/skills/noos-knowledge/SKILL.md) (et sa copie globale).
   - Y consigner :
     - Les pièges techniques rencontrés et les erreurs à ne plus reproduire (anti-patterns).
     - Les recettes et patterns validés.
