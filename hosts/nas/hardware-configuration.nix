@@ -22,18 +22,25 @@
   fileSystems."/" = lib.mkDefault {
     device = "/dev/disk/by-label/ROOT";
     fsType = "btrfs";
+    options = [ "subvol=@" "compress=zstd" "noatime" ];
   };
 
   fileSystems."/home" = lib.mkDefault {
     device = "/dev/disk/by-label/ROOT";
     fsType = "btrfs";
-    options = [ "subvol=home" ];
+    options = [ "subvol=@home" "compress=zstd" ];
   };
 
   fileSystems."/nix" = lib.mkDefault {
     device = "/dev/disk/by-label/ROOT";
     fsType = "btrfs";
-    options = [ "subvol=nix" ];
+    options = [ "subvol=@nix" "compress=zstd" "noatime" ];
+  };
+
+  fileSystems."/.snapshots" = lib.mkDefault {
+    device = "/dev/disk/by-label/ROOT";
+    fsType = "btrfs";
+    options = [ "subvol=@snapshots" "compress=zstd" ];
   };
 
   fileSystems."/boot" = lib.mkDefault {

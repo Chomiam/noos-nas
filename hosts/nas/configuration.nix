@@ -17,10 +17,16 @@
   ];
 
   # =========================================================================
-  # 🚀 CHARGEUR DE DÉMARRAGE UEFI (SYSTEMD-BOOT)
+  # 🚀 CHARGEUR DE DÉMARRAGE UEFI (SYSTEMD-BOOT) & BRANDING SYSTÈME
   # =========================================================================
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
+
+  # Remplacement de l'appellation NixOS dans le menu d'amorçage et /etc/os-release
+  system.nixos.distroName = "Noos NAS Edition";
+  system.nixos.distroId = "noos";
+  system.nixos.vendorName = "Noos Project";
+  system.nixos.vendorId = "noos";
 
   # =========================================================================
   # ⚙️ MAPPING DES VARIABLES VARS.NIX VERS LES OPTIONS NOOS.*
