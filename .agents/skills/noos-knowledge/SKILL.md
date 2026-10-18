@@ -491,10 +491,12 @@ pub fn get_system_generations_count() -> u32 {
 
 ---
 
-### 🔴 Catalogue d'Eggs distant non chargé (`catalog.json` tableau vs objet) — À CORRIGER :
-- **Symptôme** : seuls les **8 Eggs codés en dur** (`get_default_eggs()` dans `src/games.rs`) apparaissent dans le Dashboard ; les 71 Eggs du dépôt `noos_nas_eggs` sont absents ; la variable `LOADER` (Paper/Fabric/Forge) n'est jamais transmise au conteneur.
-- **Cause racine (RCA)** : `catalog.json` est un **tableau JSON** (`[ {…}, … ]`) alors que le Dashboard désérialise `RemoteCatalogResponse { eggs: Vec<Egg> }`, c'est-à-dire un objet `{"eggs":[…]}`. serde échoue → `sync_remote_eggs()` renvoie `None` → **repli silencieux** sur `get_default_eggs()`. Les scripts Python du dépôt (`scripts/build_eggs.py`, `scripts/test_eggs.py`) attendent eux aussi `catalog["eggs"]` (objet) : le format publié et le format attendu ne correspondent plus.
-- **Correctif** : (1) rendre le parsing Rust tolérant aux **deux formats** (tableau **ou** `{"eggs":[…]}`) ; (2) aligner les scripts Python sur le format réellement publié. Ne jamais « réparer » un dépôt sans vérifier le format consommé par l'autre dépôt.
+### ✅ Catalogue d'Eggs distant : tolérance tableau **et** objet (`catalog.json`) — CORRIGÉ (v0.3.48, #93) :
+- **Symptôme (avant correctif)** : seuls les **8 Eggs codés en dur** (`get_default_eggs()`) apparaissaient ; les 71 Eggs du dépôt `noos_nas_eggs` étaient invisibles ; la variable `LOADER` (Paper/Fabric/Forge) n'était jamais transmise au conteneur.
+- **Cause racine (RCA)** : `catalog.json` est un **tableau JSON** (`[ {…}, … ]`) alors que le code désérialisait `RemoteCatalogResponse { eggs: Vec<Egg> }`, soit un objet `{"eggs":[…]}`. `serde` échouait (`invalid type: sequence`), `sync_remote_eggs()` renvoyait `None`, et `load_all_eggs()` retombait **silencieusement** sur les Eggs par défaut — sans le moindre message. Le cache `catalog_cache.json` n'était de ce fait jamais alimenté.
+- **Correctif** : fonction unique `parse_catalog_eggs()` (`src/games.rs`) acceptant **les deux formats**, utilisée par `sync_remote_eggs()` **et** par la lecture du cache ; `#[serde(default)]` sur `EggVariable.options` ; test unitaire couvrant tableau + objet + contenus invalides.
+- **Leçon** : ne jamais « réparer » un dépôt sans vérifier le format **réellement consommé** par l'autre dépôt, et **ne jamais laisser un repli totalement silencieux** (logguer au moins une fois). Les scripts Python de `noos_nas_eggs` (`build_eggs.py`, `test_eggs.py`) lisent encore `catalog["eggs"]` (format objet) et restent à aligner sur le tableau publié.
+- **Vérification** : les 71 Eggs du catalogue réel passent le contrôle de champs/types de la struct `Egg` (port/mémoire inclus) → chargement complet après correctif.
 
 ---
 
