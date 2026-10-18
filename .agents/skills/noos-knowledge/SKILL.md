@@ -481,6 +481,23 @@ pub fn get_system_generations_count() -> u32 {
 
 ---
 
+### Sélection du runtime Java (JVM) des Eggs Minecraft (`JAVA_VERSION` → `yolks:java_XX`) :
+- Le runtime Java d'un serveur Minecraft est **entièrement déterminé par le tag de l'image Docker** `ghcr.io/pterodactyl/yolks:java_XX` : la commande de démarrage (`java … -jar server.jar nogui`) ne change jamais, **seul le tag d'image change**.
+- `env_map` du Dashboard n'est alimenté **que** par `egg.variables` (`src/games.rs::create_game_server`) : toute variable devant atteindre le conteneur (dont `JAVA_VERSION` et `LOADER`) doit être **déclarée dans l'Egg**, sinon elle est silencieusement ignorée.
+- Changer la JVM d'un serveur existant impose de **recréer** le conteneur (`docker rm -f` + relance de `run_server_deployment_pipeline`), car `docker restart` réutilise la même image. Le volume `/mnt/storage/games/<id>` est conservé (mondes, plugins, mods intacts).
+- Déduction automatique (heuristique `src/minecraft.rs::resolve_java_image`) **vérifiée contre le manifest officiel Mojang** (`https://piston-meta.mojang.com/mc/game/version_manifest_v2.json`, champ `javaVersion.majorVersion`) : 1.20.5+ → Java 21, 1.18–1.20.4 → Java 17, ≤ 1.16.5 → Java 8. **Seule exception assumée : MC 1.17** (officiellement Java 16) est laissée sur Java 17 (compatible ascendante, recommandation PaperMC).
+- Tags JVM réellement publiés sur `yolks` : `java_7, 8, 9, 11, 14, 16, 17, 18, 19, 21, 22, 23, 24, 25` (vérifiés via `docker manifest inspect`). **Vérifier l'existence d'un tag avant de l'exposer** dans l'UI.
+- Attention au registre : pour les images Java du Dashboard, c'est **`ghcr.io/pterodactyl/yolks`** (et non `parkervcp/yolks`).
+
+---
+
+### 🔴 Catalogue d'Eggs distant non chargé (`catalog.json` tableau vs objet) — À CORRIGER :
+- **Symptôme** : seuls les **8 Eggs codés en dur** (`get_default_eggs()` dans `src/games.rs`) apparaissent dans le Dashboard ; les 71 Eggs du dépôt `noos_nas_eggs` sont absents ; la variable `LOADER` (Paper/Fabric/Forge) n'est jamais transmise au conteneur.
+- **Cause racine (RCA)** : `catalog.json` est un **tableau JSON** (`[ {…}, … ]`) alors que le Dashboard désérialise `RemoteCatalogResponse { eggs: Vec<Egg> }`, c'est-à-dire un objet `{"eggs":[…]}`. serde échoue → `sync_remote_eggs()` renvoie `None` → **repli silencieux** sur `get_default_eggs()`. Les scripts Python du dépôt (`scripts/build_eggs.py`, `scripts/test_eggs.py`) attendent eux aussi `catalog["eggs"]` (objet) : le format publié et le format attendu ne correspondent plus.
+- **Correctif** : (1) rendre le parsing Rust tolérant aux **deux formats** (tableau **ou** `{"eggs":[…]}`) ; (2) aligner les scripts Python sur le format réellement publié. Ne jamais « réparer » un dépôt sans vérifier le format consommé par l'autre dépôt.
+
+---
+
 ### Régulation Thermique Linéaire par Morceaux (Courbes Ventilateurs) :
 Pour convertir une température mesurée en consigne PWM fluide à partir d'une liste ordonnée de points d'inflexion `(temp_c, pwm_percent)` :
 ```rust
