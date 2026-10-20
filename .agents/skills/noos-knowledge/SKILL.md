@@ -450,6 +450,21 @@ Ce guide regroupe les apprentissages essentiels, l'architecture des dépôts, le
       1. Toujours tester l'absence de fonctions dupliquées via un linter ou un script d'audit AST avant toute release.
       2. Déclarer systématiquement les variables avec `let` ou `const` pour éviter toute pollution du scope global `window`.
 
+38. **Désalignement des Permissions POSIX entre le Dashboard (`root`, `umask 022`) et les Conteneurs de Jeux Pterodactyl Yolks (`uid=1001 container`) :**
+    - *Erreur passée* :
+      1. Exécuter `chmod -R 777` uniquement lors de la création initiale du serveur (`create_game_server`) sur un dossier vide, sans renormaliser les permissions lors des démarrages/redémarrages/arrêts ultérieurs (`control_game_server`), des changements de JVM (`set_game_server_java_version`) ou des opérations du gestionnaire de fichiers (`handle_files_upload`, `copy_item`, `move_item`, `write_file_content`, `extract_archive`, `create_directory`).
+      2. Comme le démon `noos-dashboard` tourne en tant que `root` avec `umask 022`, tout fichier ou dossier de monde/plugin téléversé, copié ou édité depuis l'interface Web était créé avec les droits `0644`/`0755` appartenant à `root:users` (ou `chomiam:users` après extraction d'archive).
+      3. Or les conteneurs de jeux Pterodactyl Yolks (`ghcr.io/pterodactyl/yolks:java_*`) tournent avec l'utilisateur interne non-privilégié `uid=1001(container) gid=1001(container)`, qui n'est ni `root` (0), ni `chomiam` (1000), ni membre du groupe `users` (100). Le serveur Minecraft subissait alors des échecs critiques d'écriture au lancement et à l'exécution (`Permission denied` sur `server.properties` et `ops.json`, `AccessDeniedException` sur `session.lock` des mondes Multiverse et configurations WorldGuard, `SQLITE_READONLY` sur les bases SQLite d'AuthMe et EssentialsX-GUI).
+    - *Règle & Pattern éprouvé* :
+      1. **Fonction centralisée `ensure_game_server_permissions(target_path)` (`src/games.rs`)** :
+         - Appliquer `chown -R 1001:users` (avec repli `1001:100`) pour que l'utilisateur interne `container` (`uid=1001`) soit propriétaire POSIX direct des fichiers (requis par certaines opérations Java NIO, SQLite WAL/journal, `chmod` et `utimensat`).
+         - Appliquer `chmod -R 777` et le bit `setgid` (`find <dir> -type d -exec chmod g+s {} +`) afin que le conteneur, l'utilisateur hôte (Samba/SFTP) et le Dashboard disposent tous d'un accès complet en lecture/écriture/exécution sans conflit d'UID.
+      2. **Normalisation automatique sur le cycle de vie et les opérations de fichiers** :
+         - Appeler systématiquement `ensure_game_server_permissions` avant `start`, `restart` et `stop` dans `control_game_server`, dans `run_server_deployment_pipeline` et dans `set_game_server_java_version`.
+         - Appeler `normalize_permissions_if_game_path` à la fin de chaque opération du gestionnaire de fichiers (`handle_files_upload`, `create_directory`, `rename_item`, `copy_item`, `move_item`, `write_file_content`, `extract_archive`, `copy_kdrive_file_to_nas`) dès que la cible se situe sous `/mnt/storage/games` ou `~/docker/games`.
+      3. **`umask 0000` dans `entrypoint.sh`** :
+         - Définir `umask 0000` en tête du script `entrypoint.sh` des conteneurs de jeux pour que les fichiers générés à chaud par le serveur ou ses plugins soient immédiatement modifiables par l'utilisateur hôte via Samba/SFTP.
+
 ---
 
 ## 🛠️ 3. Patterns Recommandés & Recettes Éprouvées
